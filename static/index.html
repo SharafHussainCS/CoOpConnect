@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Co-op Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0d1b2a;
+    --ink: #1a2e44;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f5f0e8;
+    --white: #ffffff;
+    --gray: #6b7a8d;
+    --danger: #c0392b;
+    --success: #1e7e34;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  .bg-pattern {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(201,168,76,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(13,27,42,0.9) 0%, transparent 70%),
+      linear-gradient(135deg, #0d1b2a 0%, #1a2e44 50%, #0d1b2a 100%);
+  }
+
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .container { position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    padding: 2rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 1rem;
+  }
+
+  .logo-badge {
+    width: 60px; height: 48px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--navy);
+    font-family: 'Playfair Display', serif;
+    box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+  }
+
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--cream);
+    line-height: 1.2;
+  }
+
+  .logo-text span { color: var(--gold); display: block; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; }
+
+  nav a {
+    color: var(--gray); text-decoration: none; margin-left: 2rem;
+    font-size: 0.9rem; letter-spacing: 0.05em; transition: color 0.2s;
+  }
+  nav a:hover { color: var(--gold); }
+
+  /* Hero */
+  .hero {
+    min-height: calc(100vh - 90px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: ''; display: block; width: 40px; height: 1px; background: var(--gold);
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #ffffff 30%, var(--gold-light) 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 1.15rem; color: var(--gray); max-width: 520px;
+    line-height: 1.7; margin-bottom: 3.5rem;
+  }
+
+  /* Cards */
+  .cards {
+    display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;
+    max-width: 800px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 340px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.35s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), transparent);
+    opacity: 0; transition: opacity 0.35s;
+  }
+
+  .card:hover { transform: translateY(-6px); border-color: rgba(201,168,76,0.5); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .card:hover::before { opacity: 1; }
+
+  .card-icon {
+    font-size: 2.5rem; margin-bottom: 1.5rem; display: block;
+  }
+
+  .card-label {
+    font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 0.5rem;
+  }
+
+  .card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; margin-bottom: 0.75rem;
+    color: var(--cream);
+  }
+
+  .card p { color: var(--gray); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.75rem; }
+
+  .card-arrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: var(--gold); font-size: 0.85rem; font-weight: 500;
+    letter-spacing: 0.05em;
+    transition: gap 0.2s;
+  }
+  .card:hover .card-arrow { gap: 0.85rem; }
+
+  /* Footer */
+  footer {
+    text-align: center; padding: 2rem;
+    color: rgba(107,122,141,0.5); font-size: 0.8rem;
+    border-top: 1px solid rgba(201,168,76,0.08);
+    position: relative; z-index: 1;
+  }
+
+  @media (max-width: 768px) {
+    header { padding: 1.5rem 1.5rem; }
+    nav { display: none; }
+    .card { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-badge">TMU</div>
+      <div class="logo-text">
+        Co-op Management
+        <span>Toronto Metropolitan University</span>
+      </div>
+    </div>
+    <nav>
+      <a href="/login">Sign In</a>
+      <a href="/apply">Apply Now</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <div class="hero-eyebrow">Co-operative Education Program</div>
+    <h1>Launch Your<br>Career Here</h1>
+    <p>Apply for the co-op program, manage your work terms, and track your professional development — all in one place.</p>
+
+    <div class="cards">
+      <a class="card" href="/apply">
+        <span class="card-icon">📋</span>
+        <div class="card-label">New Students</div>
+        <h2>Apply to Co-op</h2>
+        <p>Submit your application for provisional acceptance into the co-operative education program.</p>
+        <span class="card-arrow">Start Application →</span>
+      </a>
+
+      <a class="card" href="/login">
+        <span class="card-icon">🎓</span>
+        <div class="card-label">Members & Staff</div>
+        <h2>Co-op Portal</h2>
+        <p>Students, supervisors, and coordinators sign in to access your dashboard and manage work terms.</p>
+        <span class="card-arrow">Sign In →</span>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2026 TMU Co-op Office &nbsp;·&nbsp; All Rights Reserved
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply to Co-op | University Co-op Office</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/shared.css">
+<style>
+  .apply-wrap {
+    min-height: 100vh; display: flex; align-items: stretch;
+  }
+  .apply-sidebar {
+    width: 380px; flex-shrink: 0;
+    background: linear-gradient(160deg, #112030 0%, #0d1b2a 100%);
+    border-right: 1px solid var(--border);
+    padding: 3rem 2.5rem;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .apply-sidebar-logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; }
+  .apply-sidebar h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--cream); margin-bottom: 1rem; line-height: 1.2; }
+  .apply-sidebar p { color: var(--gray); font-size: 0.9rem; line-height: 1.7; }
+  .apply-sidebar-logo .logo-badge {width: 50px; height: 38px;}
+  .steps { margin-top: 2.5rem; }
+  .step { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: flex-start; }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(201,168,76,0.15); border: 1px solid var(--gold);
+    color: var(--gold); font-size: 0.75rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .step-num.done { background: var(--gold); color: var(--navy); }
+  .step-text { font-size: 0.85rem; color: var(--gray-light); padding-top: 0.3rem; }
+  .step-text strong { color: var(--cream); display: block; margin-bottom: 0.1rem; }
+
+  .apply-main { flex: 1; padding: 3rem; overflow-y: auto; }
+  .apply-main h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--cream); margin-bottom: 0.5rem; }
+  .apply-main .subtitle { color: var(--gray); font-size: 0.9rem; margin-bottom: 2.5rem; }
+
+  .step-section { display: none; }
+  .step-section.active { display: block; }
+
+  /* Legal box */
+  .legal-box {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem;
+    height: 220px; overflow-y: auto; margin-bottom: 1rem;
+    font-size: 0.82rem; color: var(--gray); line-height: 1.7;
+  }
+  .legal-box h4 { color: var(--cream); margin-bottom: 0.5rem; font-size: 0.85rem; }
+
+  .checkbox-group { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; }
+  .checkbox-group input[type=checkbox] {
+    width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--gold);
+    margin-top: 0.15rem; cursor: pointer;
+  }
+  .checkbox-group label { font-size: 0.85rem; color: var(--gray-light); cursor: pointer; line-height: 1.5; }
+
+  /* Thank you */
+  .thankyou { text-align: center; padding: 3rem 1rem; }
+  .thankyou .checkmark {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(76,175,125,0.15); border: 2px solid var(--success);
+    font-size: 2.5rem; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 2rem;
+  }
+  .thankyou h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--cream); margin-bottom: 1rem; }
+  .thankyou p { color: var(--gray); max-width: 480px; margin: 0 auto; line-height: 1.7; }
+  .file-hint { font-size: 0.77rem; color: var(--gray); margin-top: 0.3rem; }
+
+  @media (max-width: 900px) {
+    .apply-sidebar { display: none; }
+    .apply-main { padding: 2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+
+<div class="apply-wrap" style="position:relative;z-index:1;">
+  <!-- Sidebar -->
+  <div class="apply-sidebar">
+    <div>
+      <div class="apply-sidebar-logo">
+        <a href="/" style="display:flex;align-items:center;gap:0.75rem;text-decoration:none;">
+          <div class="logo-badge">TMU</div>
+          <span style="font-family:'Playfair Display',serif;color:var(--cream);font-size:0.95rem;">Co-op Office</span>
+        </a>
+      </div>
+      <h2>Join the Co-op Program</h2>
+      <p>Gain real-world experience while completing your degree. Our co-op program connects you with industry partners across Canada and beyond.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num" id="s1">1</div>
+          <div class="step-text"><strong>Personal Information</strong>Your name, ID and contact details</div>
+        </div>
+        <div class="step">
+          <div class="step-num" id="s2">2</div>
+          <div class="step-text"><strong>Program Details</strong>Your field and year of study</div>
+        </div>
+        <div class="step">
+          <div class="step-num" id="s3">3</div>
+          <div class="step-text"><strong>Documents</strong>Upload your resume (optional)</div>
+        </div>
+        <div class="step">
+          <div class="step-num" id="s4">4</div>
+          <div class="step-text"><strong>Legal Agreement</strong>Review and confirm terms</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:0.78rem;color:rgba(107,122,141,0.5);">
+      Already in co-op? <a href="/login" style="color:var(--gold);text-decoration:none;">Sign In</a>
+    </div>
+  </div>
+
+  <!-- Main Form -->
+  <div class="apply-main">
+    <div id="msg-area"></div>
+
+    <!-- Step 1: Personal Info -->
+    <div class="step-section active" id="sec1">
+      <h1>Personal Information</h1>
+      <p class="subtitle">Please use your official TMU email address.</p>
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="name" placeholder="Jane Smith">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Student ID *</label>
+          <input type="text" id="student_id" placeholder="100123456" maxlength="9">
+          <div class="file-hint">9 digit TMU student number</div>
+        </div>
+        <div class="form-group">
+          <label>TMU Email *</label>
+          <input type="email" id="email" placeholder="j.smith@ontariotechu.ca">
+          <div class="file-hint">Must be your official TMU email</div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <button class="btn btn-primary" onclick="goStep(2)">Continue →</button>
+        <a href="/" class="btn btn-ghost" style="margin-left:0.75rem;">← Back</a>
+      </div>
+    </div>
+
+    <!-- Step 2: Program -->
+    <div class="step-section" id="sec2">
+      <h1>Program Details</h1>
+      <p class="subtitle">Tell us about your study program.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Program / Major *</label>
+          <select id="program">
+            <option value="">Select program…</option>
+            <option>Computer Science</option>
+            <option>Software Engineering</option>
+            <option>Electrical Engineering</option>
+            <option>Mechanical Engineering</option>
+            <option>Business Administration</option>
+            <option>Data Science</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Academic Year *</label>
+          <select id="year">
+            <option value="">Select year…</option>
+            <option>2024</option>
+            <option>2025</option>
+            <option>2026</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button class="btn btn-primary" onclick="goStep(3)">Continue →</button>
+        <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Documents -->
+    <div class="step-section" id="sec3">
+      <h1>Documents</h1>
+      <p class="subtitle">Upload your resume to strengthen your application (optional).</p>
+      <div class="form-group">
+        <label>Resume (PDF, DOC, DOCX — optional)</label>
+        <input type="file" id="resume" accept=".pdf,.doc,.docx" style="padding:0.6rem;cursor:pointer;">
+        <div class="file-hint">Max file size: 5MB</div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button class="btn btn-primary" onclick="goStep(4)">Continue →</button>
+        <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Legal -->
+    <div class="step-section" id="sec4">
+      <h1>Terms & Agreement</h1>
+      <p class="subtitle">Please read and confirm the following before submitting.</p>
+
+      <div class="legal-box">
+        <h4>Co-operative Education Program — Application Agreement</h4>
+        <p>By submitting this application, I, the applicant, acknowledge and agree to the following terms and conditions governing participation in the TMU Co-operative Education Program:</p>
+        <br>
+        <p><strong>1. Accuracy of Information.</strong> I certify that all information provided in this application is accurate, complete, and true to the best of my knowledge. I understand that any misrepresentation may result in immediate rejection of my application or termination from the co-op program.</p>
+        <br>
+        <p><strong>2. Academic Standing.</strong> I understand that acceptance into the co-op program is contingent on maintaining the required academic standing as set by the Co-op Office. Failure to maintain this standing may result in removal from the program.</p>
+        <br>
+        <p><strong>3. Work Term Obligations.</strong> If accepted, I agree to fulfill all work term obligations, including submitting required reports by the specified deadlines (within 30 days of the end of each work term), participating in employer evaluations, and adhering to workplace policies.</p>
+        <br>
+        <p><strong>4. Privacy and Data Use.</strong> I consent to the TMU Co-op Office collecting, storing, and processing my personal information for the purposes of administering the co-op program, including sharing relevant information with prospective employers.</p>
+        <br>
+        <p><strong>5. Provisional Acceptance.</strong> I understand that this application results in provisional acceptance only. Final acceptance is subject to review of academic requirements and other criteria as determined by the Co-op Coordinator.</p>
+        <br>
+        <p><strong>6. Code of Conduct.</strong> I agree to uphold the TMU's Code of Student Conduct during all co-op activities, including workplace placements. Violations may result in disciplinary action and removal from the program.</p>
+        <br>
+        <p><strong>7. Amendment.</strong> The Co-op Office reserves the right to amend these terms and conditions at any time. Continued participation constitutes acceptance of any changes.</p>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="chk1">
+        <label for="chk1">I have read and understand the Co-op Program Application Agreement above and agree to all terms and conditions.</label>
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="chk2">
+        <label for="chk2">I confirm that all information I have provided is accurate and complete. I understand that providing false information may result in rejection or removal from the program.</label>
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="chk3">
+        <label for="chk3">I consent to the TMU Co-op Office storing and processing my personal data as described in the agreement above.</label>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button class="btn btn-primary" id="submit-btn" onclick="submitApplication()">Submit Application</button>
+        <button class="btn btn-ghost" onclick="goStep(3)">← Back</button>
+      </div>
+    </div>
+
+    <!-- Thank You -->
+    <div class="step-section" id="sec5">
+      <div class="thankyou">
+        <div class="checkmark">✓</div>
+        <h2>Application Submitted!</h2>
+        <p>Thank you for applying to the TMU Co-op Program. Your application has been received and is under review by the Co-op Coordinator.</p>
+        <br>
+        <p style="color:var(--gold-light);font-size:0.9rem;">You will be notified by email regarding your provisional acceptance status. This typically takes 5–10 business days.</p>
+        <br>
+        <a href="/" class="btn btn-primary" style="margin-top:1rem;">← Return to Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+function showMsg(msg, type='error') {
+  const el = document.getElementById('msg-area');
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 5000);
+}
+
+function goStep(n) {
+  if (n > currentStep) {
+    if (!validateStep(currentStep)) return;
+  }
+  document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec' + n).classList.add('active');
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('s' + i);
+    if (!el) continue;
+    el.className = 'step-num' + (i < n ? ' done' : '');
+    el.textContent = i < n ? '✓' : i;
+  }
+  currentStep = n;
+  document.getElementById('msg-area').innerHTML = '';
+}
+
+function validateStep(step) {
+  if (step === 1) {
+    const name = document.getElementById('name').value.trim();
+    const sid = document.getElementById('student_id').value.trim();
+    const email = document.getElementById('email').value.trim();
+    if (!name) { showMsg('Please enter your full name.'); return false; }
+    if (!/^\d{9}$/.test(sid)) { showMsg('Student ID must be 9 digits.'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMsg('Please enter a valid email address.'); return false; }
+    const validDomains = ['@torontomu.ca'];
+    if (!validDomains.some(d => email.endsWith(d))) {
+      showMsg('Email not found in university database. Please use your official TMU email.');
+      return false;
+    }
+  }
+  if (step === 2) {
+    if (!document.getElementById('program').value) { showMsg('Please select your program.'); return false; }
+    if (!document.getElementById('year').value) { showMsg('Please select your academic year.'); return false; }
+  }
+  if (step === 4) {
+    if (!document.getElementById('chk1').checked || !document.getElementById('chk2').checked || !document.getElementById('chk3').checked) {
+      showMsg('Please confirm all checkboxes to proceed.'); return false;
+    }
+  }
+  return true;
+}
+
+async function submitApplication() {
+  if (!validateStep(4)) return;
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  const form = new FormData();
+  form.append('name', document.getElementById('name').value.trim());
+  form.append('student_id', document.getElementById('student_id').value.trim());
+  form.append('email', document.getElementById('email').value.trim());
+  form.append('program', document.getElementById('program').value);
+  form.append('year', document.getElementById('year').value);
+  const resume = document.getElementById('resume').files[0];
+  if (resume) form.append('resume', resume);
+
+  try {
+    const res = await fetch('/api/apply', { method: 'POST', body: form });
+    const data = await res.json();
+    if (res.ok) {
+      goStep(5);
+    } else {
+      showMsg(data.detail || 'Submission failed. Please try again.');
+      btn.disabled = false; btn.textContent = 'Submit Application';
+    }
+  } catch(e) {
+    showMsg('Network error. Please check your connection.');
+    btn.disabled = false; btn.textContent = 'Submit Application';
+  }
+}
+</script>
+</body>
+</html>

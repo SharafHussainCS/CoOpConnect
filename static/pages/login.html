@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In | Co-op Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/shared.css">
+<style>
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .auth-card {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 440px;
+    background: rgba(17,32,48,0.95); border: 1px solid var(--border);
+    border-radius: 24px; padding: 2.5rem;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .auth-logo { text-align: center; margin-bottom: 2rem; }
+  .auth-logo .logo-badge { margin: 0 auto 0.75rem; width: 70px; height: 50px; font-size: 1.4rem; }
+  .auth-logo p { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--cream); }
+  .auth-logo span { color: var(--gray); font-size: 0.82rem; }
+
+  .auth-tabs { display: flex; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; margin-bottom: 2rem; }
+  .auth-tab { flex: 1; text-align: center; padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; color: var(--gray); transition: all 0.2s; border: none; background: none; font-family: 'DM Sans', sans-serif; }
+  .auth-tab.active { background: rgba(201,168,76,0.15); color: var(--gold); }
+
+  .auth-section { display: none; }
+  .auth-section.active { display: block; }
+
+  .signup-role { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .role-btn {
+    flex: 1; padding: 0.85rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    background: rgba(255,255,255,0.04); cursor: pointer; text-align: center; transition: all 0.2s;
+  }
+  .role-btn .role-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+  .role-btn .role-label { font-size: 0.8rem; color: var(--gray); }
+  .role-btn.selected { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+  .role-btn.selected .role-label { color: var(--gold); }
+
+  .divider-text {
+    text-align: center; color: var(--gray); font-size: 0.78rem;
+    margin: 1.25rem 0; position: relative;
+  }
+  .divider-text::before, .divider-text::after {
+    content: ''; position: absolute; top: 50%;
+    width: calc(50% - 2rem); height: 1px; background: var(--border);
+  }
+  .divider-text::before { left: 0; }
+  .divider-text::after { right: 0; }
+
+  .back-home { text-align: center; margin-top: 1.5rem; font-size: 0.82rem; color: var(--gray); }
+  .back-home a { color: var(--gold); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <a href="/" style="color:var(--gold);text-decoration:none;"><div class="logo-badge">TMU</div></a>
+    <p>Co-op Portal</p>
+    <span>TMU Co-operative Education</span>
+  </div>
+
+  <div id="msg-area"></div>
+
+  <div class="auth-tabs">
+    <button class="auth-tab active" onclick="switchAuth('login')">Sign In</button>
+    <button class="auth-tab" onclick="switchAuth('signup')">Create Account</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="auth-section active" id="login-section">
+    <div class="form-group">
+      <label>Username or Email</label>
+      <input type="text" id="login-username" placeholder="your_username" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary btn-full mt-4" onclick="doLogin()">Sign In</button>
+    <div class="back-home mt-4">
+      New to co-op? <a href="/apply">Apply here</a>
+    </div>
+  </div>
+
+  <!-- SIGNUP -->
+  <div class="auth-section" id="signup-section">
+    <p style="font-size:0.82rem;color:var(--gray);margin-bottom:1rem;">I am a…</p>
+    <div class="signup-role">
+      <div class="role-btn selected" id="role-student" onclick="selectRole('student')">
+        <span class="role-icon">🎓</span>
+        <span class="role-label">Student</span>
+      </div>
+      <div class="role-btn" id="role-supervisor" onclick="selectRole('supervisor')">
+        <span class="role-icon">💼</span>
+        <span class="role-label">Supervisor</span>
+      </div>
+    </div>
+
+    <!-- Student Signup -->
+    <div id="student-fields">
+      <div class="form-group">
+        <label>Student ID</label>
+        <input type="text" id="su-student-id" placeholder="100123456">
+      </div>
+      <div class="form-group">
+        <label>TMU Email</label>
+        <input type="email" id="su-email" placeholder="j.smith@ontariotechu.ca">
+      </div>
+      <div class="divider-text">choose your login credentials</div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="su-username" placeholder="jsmith_coop">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="su-password" placeholder="Choose a strong password">
+      </div>
+    </div>
+
+    <!-- Supervisor Signup -->
+    <div id="supervisor-fields" class="hidden">
+      <div class="form-group">
+        <label>Work Email (must be registered by your student)</label>
+        <input type="email" id="sv-email" placeholder="supervisor@company.com">
+      </div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="sv-name" placeholder="Dr. John Smith">
+      </div>
+      <div class="divider-text">choose your login credentials</div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="sv-username" placeholder="jsmith_supervisor">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="sv-password" placeholder="Choose a strong password">
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full mt-3" onclick="doSignup()">Create Account</button>
+    <div class="back-home mt-4">
+      <a href="/apply">Apply to co-op</a> · <a href="/">Home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedRole = 'student';
+
+function showMsg(msg, type='error') {
+  const el = document.getElementById('msg-area');
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  if(type!=='error') setTimeout(() => { el.innerHTML=''; }, 4000);
+}
+
+function switchAuth(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='signup')));
+  document.getElementById('login-section').classList.toggle('active', tab==='login');
+  document.getElementById('signup-section').classList.toggle('active', tab==='signup');
+  document.getElementById('msg-area').innerHTML = '';
+}
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('role-student').classList.toggle('selected', role==='student');
+  document.getElementById('role-supervisor').classList.toggle('selected', role==='supervisor');
+  document.getElementById('student-fields').classList.toggle('hidden', role!=='student');
+  document.getElementById('supervisor-fields').classList.toggle('hidden', role!=='supervisor');
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) { showMsg('Please fill in all fields.'); return; }
+
+  const form = new FormData();
+  form.append('username', username);
+  form.append('password', password);
+
+  try {
+    const res = await fetch('/api/login', { method: 'POST', body: form });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.role);
+      localStorage.setItem('username', data.username);
+      localStorage.setItem('name', data.name || data.username);
+      if (data.role === 'admin') window.location.href = '/admin';
+      else if (data.role === 'student') window.location.href = '/student';
+      else if (data.role === 'supervisor') window.location.href = '/supervisor';
+    } else {
+      showMsg(data.detail || 'Login failed.');
+    }
+  } catch(e) { showMsg('Network error.'); }
+}
+
+async function doSignup() {
+  const form = new FormData();
+  let url = '';
+
+  if (selectedRole === 'student') {
+    const sid = document.getElementById('su-student-id').value.trim();
+    const email = document.getElementById('su-email').value.trim();
+    const username = document.getElementById('su-username').value.trim();
+    const password = document.getElementById('su-password').value;
+    if (!sid || !email || !username || !password) { showMsg('Please fill in all fields.'); return; }
+    form.append('student_id', sid); form.append('email', email);
+    form.append('username', username); form.append('password', password);
+    url = '/api/signup/student';
+  } else {
+    const email = document.getElementById('sv-email').value.trim();
+    const name = document.getElementById('sv-name').value.trim();
+    const username = document.getElementById('sv-username').value.trim();
+    const password = document.getElementById('sv-password').value;
+    if (!email || !name || !username || !password) { showMsg('Please fill in all fields.'); return; }
+    form.append('email', email); form.append('name', name);
+    form.append('username', username); form.append('password', password);
+    url = '/api/signup/supervisor';
+  }
+
+  try {
+    const res = await fetch(url, { method: 'POST', body: form });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('Account created! You can now sign in.', 'success');
+      switchAuth('login');
+    } else {
+      showMsg(data.detail || 'Sign-up failed.');
+    }
+  } catch(e) { showMsg('Network error.'); }
+}
+
+// Enter key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const loginActive = document.getElementById('login-section').classList.contains('active');
+    if (loginActive) doLogin();
+  }
+});
+</script>
+</body>
+</html>

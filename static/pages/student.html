@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Portal | Co-op</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/shared.css">
+<style>
+  .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 68px); }
+  .sidebar-content { flex: 1; padding: 2rem 2.5rem; overflow-y: auto; }
+  .wt-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .wt-card:hover { border-color: rgba(201,168,76,0.4); background: rgba(255,255,255,0.06); }
+  .wt-card .company { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--cream); }
+  .wt-card .position { color: var(--gray); font-size: 0.85rem; margin: 0.2rem 0; }
+  .wt-card .dates { font-size: 0.78rem; color: var(--gray); }
+  .wt-card .indicators { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+  .indicator { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 20px; }
+  .ind-done { background: rgba(76,175,125,0.12); color: var(--success); }
+  .ind-pending { background: rgba(232,164,76,0.12); color: var(--warning); }
+  .ind-overdue { background: rgba(224,92,92,0.12); color: var(--danger); }
+  .ind-rejected { background: rgba(224,92,92,0.12); color: var(--danger); }
+  .logo-badge {width: 50px; height: 38px;}
+
+  .template-banner {
+    background: rgba(76,143,232,0.08); border: 1px solid rgba(76,143,232,0.25);
+    border-radius: 12px; padding: 1rem 1.5rem; display: flex;
+    align-items: center; justify-content: space-between; margin-bottom: 1.5rem;
+  }
+  .template-banner p { font-size: 0.875rem; color: var(--gray-light); }
+  .template-banner strong { color: var(--white); }
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+<div class="page-wrap">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <a class="logo-link" href="/">
+      <div class="logo-badge">TMU</div>
+      <span class="logo-name">Co-op Portal</span>
+    </a>
+    <div class="topbar-right">
+      <span class="user-chip" id="user-chip">🎓 Student</span>
+      <button onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <nav>
+        <div class="sidebar-section">Navigation</div>
+        <a href="#" class="active" onclick="showTab('workterms'); return false;">📋 Work Terms</a>
+        <a href="#" onclick="showTab('add'); return false;">➕ Add Work Term</a>
+      </nav>
+    </div>
+
+    <!-- Content -->
+    <div class="sidebar-content">
+      <div id="msg-area"></div>
+
+      <!-- Work Terms List -->
+      <div id="tab-workterms">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h1 class="section-title">My Work Terms</h1>
+            <p class="section-sub">Select a work term to submit your report.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showTab('add')">+ Add Work Term</button>
+        </div>
+
+        <div class="template-banner">
+          <div>
+            <strong>Need a report template?</strong>
+            <p>Download our official Co-op Report Template to get started.</p>
+          </div>
+          <a href="/api/report-template" class="btn btn-ghost btn-sm" download>⬇ Download Template</a>
+        </div>
+
+        <div id="wt-list"><div class="empty-state"><span class="icon">📁</span>No work terms yet. Add your first one!</div></div>
+      </div>
+
+      <!-- Add Work Term -->
+      <div id="tab-add" class="hidden">
+        <h1 class="section-title">Add Work Term</h1>
+        <p class="section-sub">Enter your work placement details. Your supervisor will be notified to register.</p>
+        <div class="panel">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Company Name *</label>
+              <input type="text" id="wt-company" placeholder="Acme Corp">
+            </div>
+            <div class="form-group">
+              <label>Position / Role *</label>
+              <input type="text" id="wt-position" placeholder="Software Developer Intern">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Date *</label>
+              <input type="date" id="wt-start">
+            </div>
+            <div class="form-group">
+              <label>End Date *</label>
+              <input type="date" id="wt-end">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Supervisor Email *</label>
+            <input type="email" id="wt-supervisor" placeholder="supervisor@company.com">
+            <div style="font-size:0.77rem;color:var(--gray);margin-top:0.3rem;">This allows your supervisor to register an account and submit your evaluation.</div>
+          </div>
+          <div class="flex gap-2 mt-4">
+            <button class="btn btn-primary" onclick="addWorkTerm()">Add Work Term</button>
+            <button class="btn btn-ghost" onclick="showTab('workterms')">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Work Term Detail -->
+      <div id="tab-detail" class="hidden">
+        <div class="flex items-center gap-2 mb-4">
+          <button class="btn btn-ghost btn-sm" onclick="showTab('workterms')">← Back</button>
+          <div id="detail-rejected-banner" class="hidden" style="margin-left:1rem;">
+            <span class="badge badge-rejected">⚠ Co-op Assignment Rejected</span>
+            <span id="detail-reject-reason" style="font-size:0.8rem;color:var(--danger);margin-left:0.5rem;"></span>
+          </div>
+        </div>
+        <h1 class="section-title" id="detail-title">Work Term</h1>
+        <p class="section-sub" id="detail-sub"></p>
+
+        <div class="panel" style="margin-bottom:1.25rem;">
+          <div class="panel-title">Work Term Details</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">COMPANY</div><div id="d-company" style="color:var(--cream)"></div></div>
+            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">POSITION</div><div id="d-position" style="color:var(--cream)"></div></div>
+            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">DATES</div><div id="d-dates" style="color:var(--cream)"></div></div>
+            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">SUPERVISOR</div><div id="d-supervisor" style="color:var(--cream)"></div></div>
+            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">REPORT DEADLINE</div><div id="d-deadline" style="color:var(--warning)"></div></div>
+            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">EVALUATION</div><div id="d-eval" style="color:var(--cream)"></div></div>
+          </div>
+        </div>
+
+        <!-- Report submission -->
+        <div class="panel" id="report-panel">
+          <div class="panel-title">Work Term Report</div>
+          <div id="report-submitted-msg" class="hidden">
+            <div class="alert alert-success">✓ Report submitted. You may resubmit to replace it.</div>
+          </div>
+          <div class="tabs">
+            <button class="tab active" onclick="switchReportTab('upload')">Upload PDF</button>
+            <button class="tab" onclick="switchReportTab('template')">Fill Template</button>
+          </div>
+          <div id="rt-upload" class="tab-content active">
+            <div class="form-group">
+              <label>Report PDF</label>
+              <input type="file" id="report-file" accept=".pdf" style="padding:0.6rem;">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="submitReport()">Submit Report</button>
+          </div>
+          <div id="rt-template" class="tab-content">
+            <p style="font-size:0.85rem;color:var(--gray);margin-bottom:1rem;">Fill out the template below and click "Generate PDF". This will create a PDF to submit as your report.</p>
+            <div class="form-group"><label>Executive Summary</label><textarea id="t-summary" rows="3" placeholder="Brief overview of your work term…"></textarea></div>
+            <div class="form-group"><label>Company Overview</label><textarea id="t-company" rows="2" placeholder="Describe the company…"></textarea></div>
+            <div class="form-group"><label>Work Accomplished</label><textarea id="t-work" rows="3" placeholder="Describe tasks and projects you worked on…"></textarea></div>
+            <div class="form-group"><label>Learning Outcomes</label><textarea id="t-learning" rows="3" placeholder="What skills and knowledge did you gain?"></textarea></div>
+            <div class="form-group"><label>Conclusions</label><textarea id="t-conclusion" rows="2" placeholder="Reflections and takeaways…"></textarea></div>
+            <button class="btn btn-primary btn-sm" onclick="generateAndSubmit()">Generate & Submit PDF</button>
+          </div>
+        </div>
+
+        <!-- Update supervisor -->
+        <div class="panel">
+          <div class="panel-title">Update Supervisor Email</div>
+          <div class="flex gap-2">
+            <input type="email" id="update-sup-email" placeholder="new.supervisor@company.com" style="flex:1;">
+            <button class="btn btn-ghost btn-sm" onclick="updateSupervisor()">Update</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('token');
+let currentWtId = null;
+let workTerms = [];
+
+if (!token || localStorage.getItem('role') !== 'student') {
+  window.location.href = '/login';
+}
+
+document.getElementById('user-chip').textContent = '🎓 ' + (localStorage.getItem('name') || 'Student');
+
+function showMsg(msg, type='error') {
+  const el = document.getElementById('msg-area');
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  if(type !== 'error') setTimeout(() => el.innerHTML='', 4000);
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '/login';
+}
+
+function showTab(tab) {
+  ['workterms','add','detail'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('hidden', t !== tab);
+  });
+  document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+  if (tab === 'workterms' || tab === 'detail') {
+    document.querySelectorAll('.sidebar nav a')[0].classList.add('active');
+  } else {
+    document.querySelectorAll('.sidebar nav a')[1].classList.add('active');
+  }
+}
+
+function switchReportTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='upload')||(i===1&&tab==='template')));
+  document.getElementById('rt-upload').classList.toggle('active', tab==='upload');
+  document.getElementById('rt-template').classList.toggle('active', tab==='template');
+}
+
+function deadlineColor(endDate) {
+  const deadline = new Date(endDate);
+  deadline.setDate(deadline.getDate() + 30);
+  const now = new Date();
+  const diff = (deadline - now) / (1000*60*60*24);
+  if (diff < 0) return 'var(--danger)';
+  if (diff < 7) return 'var(--warning)';
+  return 'var(--success)';
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'});
+}
+
+function deadline30(endDate) {
+  const d = new Date(endDate); d.setDate(d.getDate()+30);
+  return d;
+}
+
+async function loadWorkTerms() {
+  const res = await fetch('/api/student/workterms', { headers: { Authorization: 'Bearer '+token }});
+  workTerms = await res.json();
+  renderList();
+}
+
+function renderList() {
+  const el = document.getElementById('wt-list');
+  if (!workTerms.length) { el.innerHTML = '<div class="empty-state"><span class="icon">📁</span>No work terms yet. Add your first one!</div>'; return; }
+  el.innerHTML = workTerms.map(wt => {
+    const dl = deadline30(wt.end_date);
+    const isOverdue = !wt.report_path && new Date() > dl;
+    const reportInd = wt.report_path ? `<span class="indicator ind-done">✓ Report</span>` :
+      (isOverdue ? `<span class="indicator ind-overdue">⚠ Report Overdue</span>` : `<span class="indicator ind-pending">⏳ Report Due ${formatDate(dl)}</span>`);
+    const evalInd = wt.eval_submitted_at ? `<span class="indicator ind-done">✓ Evaluation</span>` : `<span class="indicator ind-pending">⏳ Awaiting Eval</span>`;
+    const rejInd = wt.status === 'rejected' ? `<span class="indicator ind-rejected">✗ Rejected</span>` : '';
+    return `<div class="wt-card" onclick="openDetail(${wt.id})">
+      <div class="flex justify-between items-center">
+        <div class="company">${wt.company}</div>
+        ${rejInd}
+      </div>
+      <div class="position">${wt.position}</div>
+      <div class="dates">${formatDate(wt.start_date)} – ${formatDate(wt.end_date)}</div>
+      <div class="indicators">${reportInd}${evalInd}</div>
+    </div>`;
+  }).join('');
+}
+
+function openDetail(id) {
+  const wt = workTerms.find(w => w.id === id);
+  currentWtId = id;
+  document.getElementById('detail-title').textContent = `${wt.company} — ${wt.position}`;
+  document.getElementById('detail-sub').textContent = `${formatDate(wt.start_date)} to ${formatDate(wt.end_date)}`;
+  document.getElementById('d-company').textContent = wt.company;
+  document.getElementById('d-position').textContent = wt.position;
+  document.getElementById('d-dates').textContent = `${formatDate(wt.start_date)} – ${formatDate(wt.end_date)}`;
+  document.getElementById('d-supervisor').textContent = wt.supervisor_email || '—';
+  const dl = deadline30(wt.end_date);
+  const dlEl = document.getElementById('d-deadline');
+  dlEl.textContent = formatDate(dl);
+  dlEl.style.color = deadlineColor(wt.end_date);
+  document.getElementById('d-eval').textContent = wt.eval_submitted_at ? `Submitted ${formatDate(wt.eval_submitted_at)}` : 'Pending';
+  document.getElementById('report-submitted-msg').classList.toggle('hidden', !wt.report_path);
+  document.getElementById('update-sup-email').value = wt.supervisor_email || '';
+
+  const rejBanner = document.getElementById('detail-rejected-banner');
+  if (wt.status === 'rejected') {
+    rejBanner.classList.remove('hidden');
+    document.getElementById('detail-reject-reason').textContent = wt.rejection_reason ? `Reason: ${wt.rejection_reason}` : '';
+  } else {
+    rejBanner.classList.add('hidden');
+  }
+
+  showTab('detail');
+}
+
+async function addWorkTerm() {
+  const company = document.getElementById('wt-company').value.trim();
+  const position = document.getElementById('wt-position').value.trim();
+  const start = document.getElementById('wt-start').value;
+  const end = document.getElementById('wt-end').value;
+  const supervisor = document.getElementById('wt-supervisor').value.trim();
+  if (!company || !position || !start || !end || !supervisor) { showMsg('Please fill in all fields.'); return; }
+  if (new Date(end) <= new Date(start)) { showMsg('End date must be after start date.'); return; }
+
+  const form = new FormData();
+  form.append('company', company); form.append('position', position);
+  form.append('start_date', start); form.append('end_date', end);
+  form.append('supervisor_email', supervisor);
+
+  const res = await fetch('/api/student/workterms', { method: 'POST', headers: { Authorization: 'Bearer '+token }, body: form });
+  const data = await res.json();
+  if (res.ok) {
+    showMsg('Work term added!', 'success');
+    ['wt-company','wt-position','wt-start','wt-end','wt-supervisor'].forEach(id => document.getElementById(id).value='');
+    await loadWorkTerms();
+    showTab('workterms');
+  } else {
+    showMsg(data.detail || 'Failed to add work term.');
+  }
+}
+
+async function submitReport() {
+  const file = document.getElementById('report-file').files[0];
+  if (!file) { showMsg('Please select a PDF file.'); return; }
+  const form = new FormData(); form.append('report', file);
+  const res = await fetch(`/api/student/workterms/${currentWtId}/report`, { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  const data = await res.json();
+  if (res.ok) { showMsg('Report submitted!', 'success'); await loadWorkTerms(); openDetail(currentWtId); }
+  else showMsg(data.detail || 'Submission failed.');
+}
+
+async function generateAndSubmit() {
+  const wt = workTerms.find(w => w.id === currentWtId);
+  const summary = document.getElementById('t-summary').value;
+  const company = document.getElementById('t-company').value;
+  const work = document.getElementById('t-work').value;
+  const learning = document.getElementById('t-learning').value;
+  const conclusion = document.getElementById('t-conclusion').value;
+  if (!summary || !company || !work || !learning || !conclusion) { showMsg('Please fill in all template fields.'); return; }
+
+  // Generate simple text blob as PDF substitute
+  const content = `CO-OP WORK TERM REPORT\n${'='.repeat(40)}\n\nStudent: ${localStorage.getItem('name')}\nCompany: ${wt.company}\nPosition: ${wt.position}\nTerm: ${formatDate(wt.start_date)} – ${formatDate(wt.end_date)}\n\n1. EXECUTIVE SUMMARY\n${summary}\n\n2. COMPANY OVERVIEW\n${company}\n\n3. WORK ACCOMPLISHED\n${work}\n\n4. LEARNING OUTCOMES\n${learning}\n\n5. CONCLUSIONS\n${conclusion}\n`;
+
+  const blob = new Blob([content], {type:'application/pdf'});
+  const file = new File([blob], 'coop_report.pdf', {type:'application/pdf'});
+  const form = new FormData(); form.append('report', file);
+  const res = await fetch(`/api/student/workterms/${currentWtId}/report`, { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  const data = await res.json();
+  if (res.ok) { showMsg('Report generated and submitted!', 'success'); await loadWorkTerms(); openDetail(currentWtId); }
+  else showMsg(data.detail || 'Submission failed.');
+}
+
+async function updateSupervisor() {
+  const email = document.getElementById('update-sup-email').value.trim();
+  if (!email) { showMsg('Please enter an email.'); return; }
+  const form = new FormData(); form.append('supervisor_email', email);
+  const res = await fetch(`/api/student/workterms/${currentWtId}/update-supervisor`, { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  const data = await res.json();
+  if (res.ok) { showMsg('Supervisor updated!', 'success'); await loadWorkTerms(); openDetail(currentWtId); }
+  else showMsg(data.detail || 'Failed.');
+}
+
+loadWorkTerms();
+</script>
+</body>
+</html>

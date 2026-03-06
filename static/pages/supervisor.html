@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supervisor Portal | Co-op</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/shared.css">
+<style>
+  .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 68px); }
+  .logo-badge {width: 50px; height: 38px;}
+  .sidebar-content { padding: 2rem 2.5rem; overflow-y: auto; }
+  .student-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .student-card:hover { border-color: rgba(201,168,76,0.4); background: rgba(255,255,255,0.06); }
+  .student-card .sname { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--cream); }
+  .student-card .sdetail { color: var(--gray); font-size: 0.85rem; margin: 0.2rem 0; }
+  .rating-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .rating-item label { font-size: 0.78rem; color: var(--gray-light); display: block; margin-bottom: 0.3rem; }
+  select.rating { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: var(--white); padding: 0.5rem 0.75rem; font-size: 0.875rem; width: 100%; }
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+<div class="page-wrap">
+
+  <div class="topbar">
+    <a class="logo-link" href="/">
+      <div class="logo-badge">TMU</div>
+      <span class="logo-name">Co-op Portal</span>
+    </a>
+    <div class="topbar-right">
+      <span class="user-chip" id="user-chip">💼 Supervisor</span>
+      <button onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="dashboard-layout">
+    <div class="sidebar">
+      <nav>
+        <div class="sidebar-section">Navigation</div>
+        <a href="#" class="active">👥 Co-op Employees</a>
+      </nav>
+    </div>
+
+    <div class="sidebar-content">
+      <div id="msg-area"></div>
+
+      <!-- Student List -->
+      <div id="tab-list">
+        <h1 class="section-title">Co-op Employees</h1>
+        <p class="section-sub">Select a student to submit or update their evaluation.</p>
+        <div id="student-list"><div class="empty-state"><span class="icon">👥</span>No students assigned to you yet.</div></div>
+      </div>
+
+      <!-- Evaluation Form -->
+      <div id="tab-eval" class="hidden">
+        <div class="flex items-center gap-2 mb-4">
+          <button class="btn btn-ghost btn-sm" onclick="showList()">← Back</button>
+          <span id="eval-submitted-badge" class="hidden badge badge-accepted">✓ Evaluation Submitted</span>
+        </div>
+        <h1 class="section-title" id="eval-title">Evaluate Student</h1>
+        <p class="section-sub" id="eval-sub"></p>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchEvalTab('pdf')">📎 Upload PDF</button>
+          <button class="tab" onclick="switchEvalTab('online')">📝 Online Form</button>
+        </div>
+
+        <!-- PDF Tab -->
+        <div id="et-pdf" class="tab-content active">
+          <div class="panel">
+            <div class="panel-title">Employer Evaluation PDF</div>
+            <p style="font-size:0.85rem;color:var(--gray);margin-bottom:1.25rem;">
+              Scan and upload the completed paper evaluation form, or export your evaluation as a PDF.
+            </p>
+            <div class="form-group">
+              <label>Evaluation PDF</label>
+              <input type="file" id="eval-pdf" accept=".pdf" style="padding:0.6rem;cursor:pointer;">
+            </div>
+            <button class="btn btn-primary" onclick="submitEvalPDF()">Submit Evaluation</button>
+          </div>
+        </div>
+
+        <!-- Online Form Tab -->
+        <div id="et-online" class="tab-content">
+          <div class="panel">
+            <div class="panel-title">Online Evaluation Form</div>
+            <p style="font-size:0.85rem;color:var(--gray);margin-bottom:1.5rem;">Rate the student on each dimension from 1 (Poor) to 5 (Excellent).</p>
+
+            <div class="rating-group">
+              <div class="rating-item">
+                <label>Technical Skills & Knowledge</label>
+                <select class="rating" id="r-technical">
+                  <option value="">Select rating…</option>
+                  <option value="5">5 – Excellent</option>
+                  <option value="4">4 – Good</option>
+                  <option value="3">3 – Satisfactory</option>
+                  <option value="2">2 – Needs Improvement</option>
+                  <option value="1">1 – Poor</option>
+                </select>
+              </div>
+              <div class="rating-item">
+                <label>Communication Skills</label>
+                <select class="rating" id="r-communication">
+                  <option value="">Select rating…</option>
+                  <option value="5">5 – Excellent</option>
+                  <option value="4">4 – Good</option>
+                  <option value="3">3 – Satisfactory</option>
+                  <option value="2">2 – Needs Improvement</option>
+                  <option value="1">1 – Poor</option>
+                </select>
+              </div>
+              <div class="rating-item">
+                <label>Teamwork & Collaboration</label>
+                <select class="rating" id="r-teamwork">
+                  <option value="">Select rating…</option>
+                  <option value="5">5 – Excellent</option>
+                  <option value="4">4 – Good</option>
+                  <option value="3">3 – Satisfactory</option>
+                  <option value="2">2 – Needs Improvement</option>
+                  <option value="1">1 – Poor</option>
+                </select>
+              </div>
+              <div class="rating-item">
+                <label>Attitude & Professionalism</label>
+                <select class="rating" id="r-attitude">
+                  <option value="">Select rating…</option>
+                  <option value="5">5 – Excellent</option>
+                  <option value="4">4 – Good</option>
+                  <option value="3">3 – Satisfactory</option>
+                  <option value="2">2 – Needs Improvement</option>
+                  <option value="1">1 – Poor</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group mt-3">
+              <label>Overall Rating</label>
+              <select class="rating" id="r-overall">
+                <option value="">Select rating…</option>
+                <option value="Outstanding">Outstanding</option>
+                <option value="Exceeds Expectations">Exceeds Expectations</option>
+                <option value="Meets Expectations">Meets Expectations</option>
+                <option value="Below Expectations">Below Expectations</option>
+                <option value="Unsatisfactory">Unsatisfactory</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Additional Comments</label>
+              <textarea id="r-comments" rows="4" placeholder="Any additional feedback about the student's performance…"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitEvalOnline()">Submit Evaluation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let token = localStorage.getItem('token');
+let currentWtId = null;
+let students = [];
+
+if (!token || localStorage.getItem('role') !== 'supervisor') {
+  window.location.href = '/login';
+}
+
+document.getElementById('user-chip').textContent = '💼 ' + (localStorage.getItem('name') || 'Supervisor');
+
+function showMsg(msg, type='error') {
+  const el = document.getElementById('msg-area');
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  if(type!=='error') setTimeout(() => el.innerHTML='', 4000);
+}
+
+function logout() { localStorage.clear(); window.location.href = '/login'; }
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'});
+}
+
+function showList() {
+  document.getElementById('tab-list').classList.remove('hidden');
+  document.getElementById('tab-eval').classList.add('hidden');
+}
+
+function switchEvalTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='pdf')||(i===1&&tab==='online')));
+  document.getElementById('et-pdf').classList.toggle('active', tab==='pdf');
+  document.getElementById('et-online').classList.toggle('active', tab==='online');
+}
+
+async function loadStudents() {
+  const res = await fetch('/api/supervisor/students', { headers: { Authorization: 'Bearer '+token }});
+  students = await res.json();
+  const el = document.getElementById('student-list');
+  if (!students.length) { el.innerHTML = '<div class="empty-state"><span class="icon">👥</span>No students assigned to you yet.</div>'; return; }
+  el.innerHTML = students.map(s => {
+    const evalDone = s.eval_submitted_at;
+    const ind = evalDone ? `<span class="badge badge-accepted">✓ Evaluation Submitted</span>` : `<span class="badge badge-pending">⏳ Evaluation Pending</span>`;
+    return `<div class="student-card" onclick="openEval(${s.id})">
+      <div class="flex justify-between items-center">
+        <div class="sname">${s.student_name}</div>
+        ${ind}
+      </div>
+      <div class="sdetail">${s.company} — ${s.position}</div>
+      <div class="sdetail" style="font-size:0.78rem;">${formatDate(s.start_date)} – ${formatDate(s.end_date)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openEval(id) {
+  const s = students.find(x => x.id === id);
+  currentWtId = id;
+  document.getElementById('eval-title').textContent = `Evaluate ${s.student_name}`;
+  document.getElementById('eval-sub').textContent = `${s.company} — ${s.position} (${formatDate(s.start_date)} – ${formatDate(s.end_date)})`;
+  const badge = document.getElementById('eval-submitted-badge');
+  badge.classList.toggle('hidden', !s.eval_submitted_at);
+  document.getElementById('tab-list').classList.add('hidden');
+  document.getElementById('tab-eval').classList.remove('hidden');
+}
+
+async function submitEvalPDF() {
+  const file = document.getElementById('eval-pdf').files[0];
+  if (!file) { showMsg('Please select a PDF file.'); return; }
+  const form = new FormData();
+  form.append('eval_type', 'pdf');
+  form.append('eval_pdf', file);
+  const res = await fetch(`/api/supervisor/workterms/${currentWtId}/evaluate`, { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  const data = await res.json();
+  if (res.ok) { showMsg('Evaluation submitted!', 'success'); await loadStudents(); openEval(currentWtId); }
+  else showMsg(data.detail || 'Submission failed.');
+}
+
+async function submitEvalOnline() {
+  const fields = ['technical','communication','teamwork','attitude','overall'];
+  for (const f of fields) {
+    if (!document.getElementById('r-'+f).value) { showMsg('Please fill in all rating fields.'); return; }
+  }
+  const form = new FormData();
+  form.append('eval_type', 'online');
+  form.append('technical_skills', document.getElementById('r-technical').value);
+  form.append('communication', document.getElementById('r-communication').value);
+  form.append('teamwork', document.getElementById('r-teamwork').value);
+  form.append('attitude', document.getElementById('r-attitude').value);
+  form.append('overall_rating', document.getElementById('r-overall').value);
+  form.append('comments', document.getElementById('r-comments').value);
+  const res = await fetch(`/api/supervisor/workterms/${currentWtId}/evaluate`, { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  const data = await res.json();
+  if (res.ok) { showMsg('Evaluation submitted!', 'success'); await loadStudents(); openEval(currentWtId); }
+  else showMsg(data.detail || 'Submission failed.');
+}
+
+loadStudents();
+</script>
+</body>
+</html>
