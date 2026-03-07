@@ -11,45 +11,67 @@
   .auth-card {
     position: relative; z-index: 1;
     width: 100%; max-width: 440px;
-    background: rgba(17,32,48,0.95); border: 1px solid var(--border);
+    background: #ffffff; border: 1.5px solid #dde3ee;
     border-radius: 24px; padding: 2.5rem;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(0,45,113,0.15);
   }
   .auth-logo { text-align: center; margin-bottom: 2rem; }
-  .auth-logo .logo-badge { margin: 0 auto 0.75rem; width: 70px; height: 50px; font-size: 1.4rem; }
-  .auth-logo p { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--cream); }
-  .auth-logo span { color: var(--gray); font-size: 0.82rem; }
+  .auth-logo .logo-badge {
+    width: 70px; height: 44px;
+    background: #002D71;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 900;
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    margin: 0 auto 0.75rem;
+  }
+  .auth-logo p { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #002D71; }
+  .auth-logo span { color: #5a6778; font-size: 0.82rem; }
 
-  .auth-tabs { display: flex; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; margin-bottom: 2rem; }
-  .auth-tab { flex: 1; text-align: center; padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; color: var(--gray); transition: all 0.2s; border: none; background: none; font-family: 'DM Sans', sans-serif; }
-  .auth-tab.active { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .auth-tabs { display: flex; background: rgba(0,45,113,0.05); border-radius: 10px; padding: 4px; margin-bottom: 2rem; }
+  .auth-tab { flex: 1; text-align: center; padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; color: #5a6778; transition: all 0.2s; border: none; background: none; font-family: 'DM Sans', sans-serif; }
+  .auth-tab.active { background: rgba(0,76,155,0.12); color: #002D71; font-weight: 600; }
 
   .auth-section { display: none; }
   .auth-section.active { display: block; }
 
   .signup-role { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
   .role-btn {
-    flex: 1; padding: 0.85rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
-    background: rgba(255,255,255,0.04); cursor: pointer; text-align: center; transition: all 0.2s;
+    flex: 1; padding: 0.85rem; border: 1.5px solid #dde3ee; border-radius: 12px;
+    background: #ffffff; cursor: pointer; text-align: center; transition: all 0.2s;
   }
   .role-btn .role-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
   .role-btn .role-label { font-size: 0.8rem; color: var(--gray); }
-  .role-btn.selected { border-color: var(--gold); background: rgba(201,168,76,0.08); }
-  .role-btn.selected .role-label { color: var(--gold); }
+  .role-btn.selected { border-color: #004c9b; background: rgba(0,76,155,0.08); }
+  .role-btn.selected .role-label { color: #002D71; }
 
   .divider-text {
-    text-align: center; color: var(--gray); font-size: 0.78rem;
-    margin: 1.25rem 0; position: relative;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--gray);
+    font-size: 0.78rem;
+    margin: 1.25rem 0;
   }
-  .divider-text::before, .divider-text::after {
-    content: ''; position: absolute; top: 50%;
-    width: calc(50% - 2rem); height: 1px; background: var(--border);
-  }
-  .divider-text::before { left: 0; }
-  .divider-text::after { right: 0; }
 
+  .divider-text::before,
+  .divider-text::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #dde3ee;
+  }
+
+  .divider-text::before {
+    margin-right: 1rem;
+  }
+
+  .divider-text::after {
+    margin-left: 1rem;
+  }
   .back-home { text-align: center; margin-top: 1.5rem; font-size: 0.82rem; color: var(--gray); }
-  .back-home a { color: var(--gold); text-decoration: none; }
+  .back-home a { color: #004c9b; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -58,7 +80,7 @@
 
 <div class="auth-card">
   <div class="auth-logo">
-    <a href="/" style="color:var(--gold);text-decoration:none;"><div class="logo-badge">TMU</div></a>
+    <a href="/" style="text-decoration:none;"><div class="logo-badge">TMU</div></a>
     <p>Co-op Portal</p>
     <span>TMU Co-operative Education</span>
   </div>
@@ -110,7 +132,9 @@
         <label>TMU Email</label>
         <input type="email" id="su-email" placeholder="jane.smith@torontomu.ca">
       </div>
-      <div class="divider-text">choose your login credentials</div>
+      <div class="divider-text">
+        choose your login credentials
+      </div>
       <div class="form-group">
         <label>Username</label>
         <input type="text" id="su-username" placeholder="jsmith_coop">
@@ -131,7 +155,9 @@
         <label>Full Name</label>
         <input type="text" id="sv-name" placeholder="Dr. John Smith">
       </div>
-      <div class="divider-text">choose your login credentials</div>
+      <div class="divider-text">
+        choose your login credentials
+      </div>
       <div class="form-group">
         <label>Username</label>
         <input type="text" id="sv-username" placeholder="jsmith_supervisor">

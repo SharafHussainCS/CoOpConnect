@@ -31,7 +31,7 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 (UPLOAD_DIR / "reports").mkdir(exist_ok=True)
 (UPLOAD_DIR / "evaluations").mkdir(exist_ok=True)
 
-# ─── Database Setup ───────────────────────────────────────────────────────────
+# Database Setup -----------------------------------------------------------------------------------------------------------
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -42,7 +42,8 @@ def init_db():
     conn = get_db()
     c = conn.cursor()
 
-    c.execute("""CREATE TABLE IF NOT EXISTS applicants (
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS applicants (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         student_id TEXT UNIQUE NOT NULL,
@@ -58,7 +59,8 @@ def init_db():
         reviewed_at TEXT
     )""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS users (
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
@@ -69,7 +71,8 @@ def init_db():
         created_at TEXT DEFAULT (datetime('now'))
     )""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS work_terms (
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS work_terms (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         student_id TEXT NOT NULL,
         company TEXT NOT NULL,
@@ -87,7 +90,8 @@ def init_db():
         created_at TEXT DEFAULT (datetime('now'))
     )""")
 
-    c.execute("""CREATE TABLE IF NOT EXISTS supervisor_assignments (
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS supervisor_assignments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         supervisor_email TEXT NOT NULL,
         student_id TEXT NOT NULL,
@@ -97,15 +101,16 @@ def init_db():
 
     # Default admin account (password: admin123)
     admin_hash = hashlib.sha256("admin123".encode()).hexdigest()
-    c.execute("""INSERT OR IGNORE INTO users (username, password_hash, role, email, name)
-                 VALUES ('admin', ?, 'admin', 'admin@torontomu.ca', 'Co-op Coordinator')""", (admin_hash,))
+    c.execute(
+        """INSERT OR IGNORE INTO users (username, password_hash, role, email, name)
+             VALUES ('admin', ?, 'admin', 'admin@torontomu.ca', 'Co-op Coordinator')""", (admin_hash,))
 
     conn.commit()
     conn.close()
 
 init_db()
 
-# ─── Auth Helpers ─────────────────────────────────────────────────────────────
+# Auth Helpers ------------------------------------------------------------------
 
 def hash_password(pw: str) -> str:
     return hashlib.sha256(pw.encode()).hexdigest()
@@ -139,7 +144,7 @@ def require_role(*roles):
         return user
     return checker
 
-# ─── Static Files ─────────────────────────────────────────────────────────────
+# Static Files ----------------------------------------------------------------------------
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -154,7 +159,7 @@ def serve_page(page: str):
         return FileResponse(path)
     return FileResponse("static/index.html")
 
-# ─── Application Endpoints ────────────────────────────────────────────────────
+# Application Endpoints ----------------------------------------------------------------------------
 
 @app.post("/api/apply")
 async def apply(
@@ -198,7 +203,7 @@ async def apply(
         conn.close()
     return {"message": "Application submitted successfully."}
 
-# ─── Auth Endpoints ───────────────────────────────────────────────────────────
+# Auth Endpoints ----------------------------------------------------------------------------
 
 @app.post("/api/login")
 def login(username: str = Form(...), password: str = Form(...)):
@@ -260,7 +265,7 @@ def signup_supervisor(
         conn.close()
     return {"message": "Supervisor account created."}
 
-# ─── Student Endpoints ────────────────────────────────────────────────────────
+# Student Endpoints ----------------------------------------------------------------------------
 
 @app.get("/api/student/workterms")
 def get_my_workterms(user=Depends(require_role("student"))):
@@ -346,7 +351,7 @@ def update_supervisor(
     conn.close()
     return {"message": "Supervisor updated."}
 
-# ─── Supervisor Endpoints ─────────────────────────────────────────────────────
+# Supervisor Endpoints ----------------------------------------------------------------------------
 
 @app.get("/api/supervisor/students")
 def get_supervisor_students(user=Depends(require_role("supervisor"))):
@@ -418,7 +423,7 @@ async def submit_evaluation(
     conn.close()
     return {"message": "Evaluation submitted."}
 
-# ─── Admin Endpoints ──────────────────────────────────────────────────────────
+# Admin Endpoints ----------------------------------------------------------------------------
 
 @app.get("/api/admin/applicants")
 def admin_get_applicants(year: Optional[str] = None, user=Depends(require_role("admin"))):
@@ -527,7 +532,7 @@ def reject_workterm(
     conn.close()
     return {"message": "Work term marked as rejected."}
 
-# ─── Template Download ────────────────────────────────────────────────────────
+# Template Download ----------------------------------------------------------------------------
 
 @app.get("/api/report-template")
 def get_template():

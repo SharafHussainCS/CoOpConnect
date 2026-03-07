@@ -10,12 +10,12 @@
   .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 68px); }
   .sidebar-content { flex: 1; padding: 2rem 2.5rem; overflow-y: auto; }
   .wt-card {
-    background: var(--surface); border: 1px solid var(--border);
+    background: #ffffff; border: 1.5px solid #dde3ee;
     border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; cursor: pointer;
     transition: all 0.2s;
   }
-  .wt-card:hover { border-color: rgba(201,168,76,0.4); background: rgba(255,255,255,0.06); }
-  .wt-card .company { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--cream); }
+  .wt-card:hover { border-color: #004c9b; background: #f7f9fc; }
+  .wt-card .company { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #002D71; }
   .wt-card .position { color: var(--gray); font-size: 0.85rem; margin: 0.2rem 0; }
   .wt-card .dates { font-size: 0.78rem; color: var(--gray); }
   .wt-card .indicators { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
@@ -24,15 +24,24 @@
   .ind-pending { background: rgba(232,164,76,0.12); color: var(--warning); }
   .ind-overdue { background: rgba(224,92,92,0.12); color: var(--danger); }
   .ind-rejected { background: rgba(224,92,92,0.12); color: var(--danger); }
-  .logo-badge {width: 50px; height: 38px;}
+  .logo-badge {
+    width: 60px; height: 38px;
+    background: #ffffff;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 900;
+    color: #002D71;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 2px 8px rgba(0,45,113,0.15);
+  }
 
   .template-banner {
-    background: rgba(76,143,232,0.08); border: 1px solid rgba(76,143,232,0.25);
+    background: #e8f0fb; border: 1px solid #b8ccf0;
     border-radius: 12px; padding: 1rem 1.5rem; display: flex;
     align-items: center; justify-content: space-between; margin-bottom: 1.5rem;
   }
-  .template-banner p { font-size: 0.875rem; color: var(--gray-light); }
-  .template-banner strong { color: var(--white); }
+  .template-banner p { font-size: 0.875rem; color: #5a6778; }
+  .template-banner strong { color: #002D71; }
 </style>
 </head>
 <body>
@@ -139,12 +148,12 @@
         <div class="panel" style="margin-bottom:1.25rem;">
           <div class="panel-title">Work Term Details</div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
-            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">COMPANY</div><div id="d-company" style="color:var(--cream)"></div></div>
-            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">POSITION</div><div id="d-position" style="color:var(--cream)"></div></div>
-            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">DATES</div><div id="d-dates" style="color:var(--cream)"></div></div>
-            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">SUPERVISOR</div><div id="d-supervisor" style="color:var(--cream)"></div></div>
-            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">REPORT DEADLINE</div><div id="d-deadline" style="color:var(--warning)"></div></div>
-            <div><div style="font-size:0.72rem;color:var(--gray);margin-bottom:0.2rem;">EVALUATION</div><div id="d-eval" style="color:var(--cream)"></div></div>
+            <div><div style="font-size:0.72rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem;">COMPANY</div><div id="d-company" style="color:#1a2535"></div></div>
+            <div><div style="font-size:0.72rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem;">POSITION</div><div id="d-position" style="color:#1a2535"></div></div>
+            <div><div style="font-size:0.72rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem;">DATES</div><div id="d-dates" style="color:#1a2535"></div></div>
+            <div><div style="font-size:0.72rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem;">SUPERVISOR</div><div id="d-supervisor" style="color:#1a2535"></div></div>
+            <div><div style="font-size:0.72rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem;">REPORT DEADLINE</div><div id="d-deadline" style="color:var(--warning)"></div></div>
+            <div><div style="font-size:0.72rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem;">EVALUATION</div><div id="d-eval" style="color:#1a2535"></div></div>
           </div>
         </div>
 
