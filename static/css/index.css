@@ -1,0 +1,184 @@
+/* Coop Home Page*/
+
+*, *::before, *::after {
+box-sizing: border-box; margin: 0; padding: 0;
+}
+
+:root {
+--navy: #f7f9fc;
+--ink: #ffffff;
+--gold: #002D71;
+--gold-light: #1a6fc4;
+--cream: #1a2535;
+--white: #ffffff;
+--gray: #6b7a8d;
+--danger: #c0392b;
+--success: #1e7e34;
+}
+
+body {
+font-family: 'DM Sans', sans-serif;
+background: #ffffff;
+color: #1a2535;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+/* Animated background */
+.bg-pattern {
+position: fixed; inset: 0; z-index: 0;
+background:
+radial-gradient(ellipse 80% 60% at 20% 80%, rgba(0,76,155,0.06) 0%, transparent 60%),
+linear-gradient(135deg, #f7f9fc 0%, #edf2fb 50%, #f7f9fc 100%);
+}
+
+.bg-grid {
+position: fixed; inset: 0; z-index: 0;
+background-image:
+linear-gradient(rgba(0,76,155,0.04) 1px, transparent 1px),
+linear-gradient(90deg, rgba(0,76,155,0.04) 1px, transparent 1px);
+background-size: 60px 60px;
+}
+
+.container { position: relative; z-index: 1; }
+
+/* Header */
+header {
+padding: 1.25rem 4rem;
+display: flex;
+align-items: center;
+justify-content: space-between;
+background: #002D71;
+border-bottom: 3px solid #004c9b;
+}
+
+.logo {
+display: flex; align-items: center; gap: 1rem;
+}
+
+.logo-badge {
+width: 60px; height: 38px;
+background: #ffffff;
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+font-size: 1rem; font-weight: 900;
+color: #002D71;
+font-family: 'DM Sans', sans-serif;
+box-shadow: 0 2px 8px rgba(0,45,113,0.15);
+}
+
+.logo-text {
+font-family: 'Playfair Display', serif;
+font-size: 1.1rem;
+color: #ffffff;
+line-height: 1.2;
+}
+
+.logo-text span { color: rgba(255,255,255,0.65); display: block; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; }
+
+nav a {
+color: rgba(255,255,255,0.75); text-decoration: none; margin-left: 2rem;
+font-size: 0.9rem; letter-spacing: 0.05em; transition: color 0.2s;
+}
+nav a:hover { color: #ffffff; }
+
+/* Hero */
+.hero {
+min-height: calc(100vh - 90px);
+display: flex; flex-direction: column;
+align-items: center; justify-content: center;
+text-align: center;
+padding: 4rem 2rem;
+}
+
+.hero-eyebrow {
+font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase;
+color: #002D71; margin-bottom: 1.5rem;
+display: flex; align-items: center; gap: 1rem;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+content: ''; display: block; width: 40px; height: 1px; background: #002D71;
+}
+
+h1 {
+font-family: 'Playfair Display', serif;
+font-size: clamp(3rem, 8vw, 6rem);
+font-weight: 900;
+line-height: 1.05;
+margin-bottom: 1.5rem;
+color: #002D71;
+}
+
+.hero p {
+font-size: 1.15rem; color: var(--gray); max-width: 520px;
+line-height: 1.7; margin-bottom: 3.5rem;
+}
+
+/* Cards */
+.cards {
+display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;
+max-width: 800px;
+}
+
+.card {
+background: #ffffff;
+border: 1.5px solid #dde3ee;
+border-radius: 20px;
+padding: 2.5rem;
+width: 340px;
+text-decoration: none;
+color: inherit;
+transition: all 0.35s ease;
+position: relative;
+overflow: hidden;
+cursor: pointer;
+}
+
+.card::before {
+content: '';
+position: absolute; inset: 0;
+background: linear-gradient(135deg, rgba(0,76,155,0.12), transparent);
+opacity: 0; transition: opacity 0.35s;
+}
+
+.card:hover { transform: translateY(-6px); border-color: rgba(0,76,155,0.5); box-shadow: 0 15px 50px rgba(0,45,113,0.12); }
+.card:hover::before { opacity: 1; }
+
+.card-icon {
+font-size: 2.5rem; margin-bottom: 1.5rem; display: block;
+}
+
+.card-label {
+font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+color: #004c9b; margin-bottom: 0.5rem;
+}
+
+.card h2 {
+font-family: 'Playfair Display', serif;
+font-size: 1.8rem; margin-bottom: 0.75rem;
+color: #1a2535;
+}
+
+.card p { color: var(--gray); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.75rem; }
+
+.card-arrow {
+display: inline-flex; align-items: center; gap: 0.5rem;
+color: #002D71; font-size: 0.85rem; font-weight: 500;
+letter-spacing: 0.05em;
+transition: gap 0.2s;
+}
+.card:hover .card-arrow { gap: 0.85rem; }
+
+/* Footer */
+footer {
+text-align: center; padding: 2rem;
+color: #9aa5b4; font-size: 0.8rem;
+border-top: 1px solid rgba(0,76,155,0.08);
+position: relative; z-index: 1;
+}
+
+@media (max-width: 768px) {
+header { padding: 1.5rem 1.5rem; }
+nav { display: none; }
+.card { width: 100%; }
+}

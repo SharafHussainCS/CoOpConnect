@@ -6,44 +6,9 @@
 <title>Student Portal | Co-op</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/shared.css">
-<style>
-  .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 68px); }
-  .sidebar-content { flex: 1; padding: 2rem 2.5rem; overflow-y: auto; }
-  .wt-card {
-    background: #ffffff; border: 1.5px solid #dde3ee;
-    border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem; cursor: pointer;
-    transition: all 0.2s;
-  }
-  .wt-card:hover { border-color: #004c9b; background: #f7f9fc; }
-  .wt-card .company { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #002D71; }
-  .wt-card .position { color: var(--gray); font-size: 0.85rem; margin: 0.2rem 0; }
-  .wt-card .dates { font-size: 0.78rem; color: var(--gray); }
-  .wt-card .indicators { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-  .indicator { display: flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 20px; }
-  .ind-done { background: rgba(76,175,125,0.12); color: var(--success); }
-  .ind-pending { background: rgba(232,164,76,0.12); color: var(--warning); }
-  .ind-overdue { background: rgba(224,92,92,0.12); color: var(--danger); }
-  .ind-rejected { background: rgba(224,92,92,0.12); color: var(--danger); }
-  .logo-badge {
-    width: 60px; height: 38px;
-    background: #ffffff;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; font-weight: 900;
-    color: #002D71;
-    font-family: 'DM Sans', sans-serif;
-    box-shadow: 0 2px 8px rgba(0,45,113,0.15);
-  }
-
-  .template-banner {
-    background: #e8f0fb; border: 1px solid #b8ccf0;
-    border-radius: 12px; padding: 1rem 1.5rem; display: flex;
-    align-items: center; justify-content: space-between; margin-bottom: 1.5rem;
-  }
-  .template-banner p { font-size: 0.875rem; color: #5a6778; }
-  .template-banner strong { color: #002D71; }
-</style>
+<link rel="stylesheet" href="/static/css/student.css">
 </head>
+
 <body>
 <div class="bg-pattern"></div>
 <div class="bg-grid"></div>

@@ -1,0 +1,77 @@
+/* Coop Application Page */
+
+.apply-wrap {
+min-height: 100vh; display: flex; align-items: stretch;
+}
+.apply-sidebar {
+width: 380px; flex-shrink: 0;
+background: #002D71;
+border-right: 1px solid #dde3ee;
+padding: 3rem 2.5rem;
+display: flex; flex-direction: column; justify-content: space-between;
+position: sticky; top: 0; height: 100vh;
+}
+.apply-sidebar-logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; }
+.apply-sidebar h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #ffffff; margin-bottom: 1rem; line-height: 1.2; }
+.apply-sidebar p { color: rgba(255,255,255,0.65); font-size: 0.9rem; line-height: 1.7; }
+.apply-sidebar-logo .logo-badge {
+width: 60px; height: 38px;
+background: #ffffff;
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+font-size: 1rem; font-weight: 900;
+color: #002D71;
+font-family: 'DM Sans', sans-serif;
+box-shadow: 0 2px 8px rgba(0,45,113,0.15);
+}
+.steps { margin-top: 2.5rem; }
+.step { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: flex-start; }
+.step-num {
+width: 28px; height: 28px; border-radius: 50%;
+background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.6);
+color: #ffffff; font-size: 0.75rem; font-weight: 600;
+display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.step-num.done { background: #ffffff; color: #002D71; }
+.step-text { font-size: 0.85rem; color: rgba(255,255,255,0.6); padding-top: 0.3rem; }
+.step-text strong { color: #ffffff; display: block; margin-bottom: 0.1rem; }
+
+.apply-main { flex: 1; padding: 3rem; overflow-y: auto; background: #ffffff; position: relative; z-index: 1; }
+.apply-main h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #002D71; margin-bottom: 0.5rem; }
+.apply-main .subtitle { color: #5a6778; font-size: 0.9rem; margin-bottom: 2.5rem; }
+
+.step-section { display: none; }
+.step-section.active { display: block; }
+
+/* Legal box */
+.legal-box {
+background: #f7f9fc; border: 1.5px solid #dde3ee;
+border-radius: 12px; padding: 1.5rem;
+height: 220px; overflow-y: auto; margin-bottom: 1rem;
+font-size: 0.82rem; color: #5a6778; line-height: 1.7;
+}
+.legal-box h4 { color: #002D71; margin-bottom: 0.5rem; font-size: 0.85rem; }
+
+.checkbox-group { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; }
+.checkbox-group input[type=checkbox] {
+width: 18px; height: 18px; flex-shrink: 0; accent-color: #002D71;
+margin-top: 0.15rem; cursor: pointer;
+}
+.checkbox-group label { font-size: 0.85rem; color: #2d3748; cursor: pointer; line-height: 1.5; }
+
+/* Thank you */
+.thankyou { text-align: center; padding: 3rem 1rem; }
+.thankyou .checkmark {
+width: 80px; height: 80px; border-radius: 50%;
+background: rgba(29,138,90,0.1); border: 2px solid var(--success);
+font-size: 2.5rem; display: flex; align-items: center; justify-content: center;
+margin: 0 auto 2rem;
+}
+.thankyou h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #002D71; margin-bottom: 1rem; }
+.thankyou p { color: #5a6778; max-width: 480px; margin: 0 auto; line-height: 1.7; }
+.file-hint { font-size: 0.77rem; color: #9aa5b4; margin-top: 0.3rem; }
+
+@media (max-width: 900px) {
+.apply-sidebar { display: none; }
+.apply-main { padding: 2rem 1.5rem; }
+}

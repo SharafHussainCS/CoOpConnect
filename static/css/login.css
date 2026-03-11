@@ -1,0 +1,68 @@
+/* Login Page */
+
+body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+.auth-card {
+position: relative; z-index: 1;
+width: 100%; max-width: 440px;
+background: #ffffff; border: 1.5px solid #dde3ee;
+border-radius: 24px; padding: 2.5rem;
+box-shadow: 0 20px 60px rgba(0,45,113,0.15);
+}
+.auth-logo { text-align: center; margin-bottom: 2rem; }
+.auth-logo .logo-badge {
+width: 70px; height: 44px;
+background: #002D71;
+border-radius: 8px;
+display: flex; align-items: center; justify-content: center;
+font-size: 1rem; font-weight: 900;
+color: #ffffff;
+font-family: 'DM Sans', sans-serif;
+margin: 0 auto 0.75rem;
+}
+.auth-logo p { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #002D71; }
+.auth-logo span { color: #5a6778; font-size: 0.82rem; }
+
+.auth-tabs { display: flex; background: rgba(0,45,113,0.05); border-radius: 10px; padding: 4px; margin-bottom: 2rem; }
+.auth-tab { flex: 1; text-align: center; padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; color: #5a6778; transition: all 0.2s; border: none; background: none; font-family: 'DM Sans', sans-serif; }
+.auth-tab.active { background: rgba(0,76,155,0.12); color: #002D71; font-weight: 600; }
+
+.auth-section { display: none; }
+.auth-section.active { display: block; }
+
+.signup-role { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.role-btn {
+flex: 1; padding: 0.85rem; border: 1.5px solid #dde3ee; border-radius: 12px;
+background: #ffffff; cursor: pointer; text-align: center; transition: all 0.2s;
+}
+.role-btn .role-icon { font-size: 1.5rem; display: block; margin-bottom: 0.3rem; }
+.role-btn .role-label { font-size: 0.8rem; color: var(--gray); }
+.role-btn.selected { border-color: #004c9b; background: rgba(0,76,155,0.08); }
+.role-btn.selected .role-label { color: #002D71; }
+
+.divider-text {
+display: flex;
+align-items: center;
+text-align: center;
+color: var(--gray);
+font-size: 0.78rem;
+margin: 1.25rem 0;
+}
+
+.divider-text::before,
+.divider-text::after {
+content: '';
+flex: 1;
+height: 1px;
+background: #dde3ee;
+}
+
+.divider-text::before {
+margin-right: 1rem;
+}
+
+.divider-text::after {
+margin-left: 1rem;
+}
+.back-home { text-align: center; margin-top: 1.5rem; font-size: 0.82rem; color: var(--gray); }
+.back-home a { color: #004c9b; text-decoration: none; }

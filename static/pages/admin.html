@@ -3,64 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard | Co-op</title>
+<title>Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/shared.css">
-<style>
-  .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 68px); }
-  .sidebar-content { padding: 2rem 2.5rem; overflow-y: auto; }
-
-  /* Year filter */
-  .year-bar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
-  .year-chip {
-    padding: 0.35rem 1rem; border-radius: 20px; font-size: 0.8rem; cursor: pointer; border: none;
-    background: #ffffff; color: #6b7a8d; border: 1.5px solid #dde3ee; transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .year-chip.active { background: rgba(0,76,155,0.15); color: #002D71; }
-
-  /* Logo */
-  .logo-badge {
-    width: 60px; height: 38px;
-    background: #ffffff;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; font-weight: 900;
-    color: #002D71;
-    font-family: 'DM Sans', sans-serif;
-    box-shadow: 0 2px 8px rgba(0,45,113,0.15);
-  }
-
-  /* Applicant row expanded */
-  .applicant-row { cursor: pointer; }
-  .applicant-row td { padding: 0.9rem 1rem; }
-  .expand-row { display: none; }
-  .expand-row td { padding: 0.5rem 1rem 1.25rem 1rem; }
-  .expand-row.open { display: table-row; }
-  .expand-inner { background: #ffffff; border-radius: 10px; padding: 1.25rem; }
-  .decision-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-  .decision-row label { font-size: 0.78rem; color: #5a6778; min-width: 120px; }
-  .decision-row input[type=text] { flex: 1; padding: 0.45rem 0.75rem; font-size: 0.85rem; }
-
-  /* Stats row */
-  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
-  .stat-card { background: #ffffff; border: 1.5px solid #dde3ee; border-radius: 14px; padding: 1.25rem; text-align: center; }
-  .stat-num { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #002D71; }
-  .stat-label { font-size: 0.75rem; color: var(--gray); margin-top: 0.25rem; letter-spacing: 0.05em; text-transform: uppercase; }
-
-  /* Notification card */
-  .notif-card { background: #ffffff; border: 1.5px solid rgba(224,92,92,0.25); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
-  .notif-card .ninfo { font-size: 0.85rem; }
-  .notif-card .nname { color: #002D71; font-weight: 500; }
-  .notif-card .ndetail { color: var(--gray); font-size: 0.78rem; margin-top: 0.15rem; }
-  .notif-card .ntag { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 4px; background: rgba(224,92,92,0.12); color: var(--danger); }
-
-  /* Sub tabs for co-op students */
-  .sub-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .sub-tab { padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; border: 1.5px solid #dde3ee; color: var(--gray); background: none; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
-  .sub-tab.active { border-color: #004c9b; color: #002D71; background: rgba(0,76,155,0.08); }
-</style>
+<link rel="stylesheet" href="/static/css/admin.css">
 </head>
+
 <body>
 <div class="bg-pattern"></div>
 <div class="bg-grid"></div>
