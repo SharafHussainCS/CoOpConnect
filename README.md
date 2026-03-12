@@ -4,19 +4,24 @@ A full-stack co-op program management web application built with **FastAPI** (Py
 
 ## Project Structure
 ```
-coop_app/
+CoOpConnect/
 ├── main.py                    # FastAPI backend (all API routes)
-├── requirements.txt           # Python dependencies
 ├── coop.db                    # Auto-created SQLite database
 ├── uploads/                   # Uploaded files (auto-created)
 │   ├── reports/
 │   └── evaluations/
 └── static/
-    ├── index.html             # Welcome / Home page
+    ├── index.html             # Home page
     ├── css/
-    │   └── shared.css         # Shared styles for all pages
+    │   ├── shared.css         # Shared styles for all pages
+    │   ├── index.css          # Styles for index page
+    │   ├── apply.css          # Styles for apply page
+    │   ├── login.css          # Styles for login page
+    │   ├── student.css        # Styles for student page
+    │   ├── supervisor.css     # Styles for supervisor page
+    │   └── admin.css          # Styles for admin page
     └── pages/
-        ├── apply.html         # Application form (multi-step)
+        ├── apply.html         # Application form
         ├── login.html         # Login & Signup page
         ├── student.html       # Student dashboard
         ├── supervisor.html    # Supervisor dashboard
