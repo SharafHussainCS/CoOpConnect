@@ -42,7 +42,7 @@ python -m uvicorn main:app --reload --port 8000
 
 ### 3. Open in browser
 ```
-  http://localhost:8000
+http://localhost:8000
 ```
 
 ## Default Admin Account
