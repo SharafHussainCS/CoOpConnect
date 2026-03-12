@@ -96,22 +96,22 @@ Password: `admin123`
 
 ## API Endpoints
 
-POST:   `/api/apply`                                      -  Submit co-op application
-POST:   `/api/login`                                      -  Authenticate user
-POST:   `/api/signup/student`                             -  Create student account
-POST:   `/api/signup/supervisor`                          -  Create supervisor account
-GET:    `/api/student/workterms`                          -  List student's work terms
-POST:   `/api/student/workterms`                          -  Add work term
-POST:   `/api/student/workterms/{id}/report`              -  Submit report
-POST:   `/api/student/workterms/{id}/update-supervisor`   -  Update supervisor
-GET:    `/api/supervisor/students`                        -  List supervisor's students
-POST:   `/api/supervisor/workterms/{id}/evaluate`         -  Submit evaluation
-GET:    `/api/admin/applicants`                           -  List all applicants
-PATCH:  `/api/admin/applicants/{id}/provisional`          -  Set provisional status
-PATCH:  `/api/admin/applicants/{id}/final`                -  Set final status
-GET:    `/api/admin/students`                             -  List students + work terms
-GET:    `/api/admin/notifications`                        -  Get overdue/missing items
-PATCH:  `/api/admin/workterms/{id}/reject`                -  Reject a work term
+POST:   `/api/apply`                                      -  Submit co-op application\
+POST:   `/api/login`                                      -  Authenticate user\
+POST:   `/api/signup/student`                             -  Create student account\
+POST:   `/api/signup/supervisor`                          -  Create supervisor account\
+GET:    `/api/student/workterms`                          -  List student's work terms\
+POST:   `/api/student/workterms`                          -  Add work term\
+POST:   `/api/student/workterms/{id}/report`              -  Submit report\
+POST:   `/api/student/workterms/{id}/update-supervisor`   -  Update supervisor\
+GET:    `/api/supervisor/students`                        -  List supervisor's students\
+POST:   `/api/supervisor/workterms/{id}/evaluate`         -  Submit evaluation\
+GET:    `/api/admin/applicants`                           -  List all applicants\
+PATCH:  `/api/admin/applicants/{id}/provisional`          -  Set provisional status\
+PATCH:  `/api/admin/applicants/{id}/final`                -  Set final status\
+GET:    `/api/admin/students`                             -  List students + work terms\
+GET:    `/api/admin/notifications`                        -  Get overdue/missing items\
+PATCH:  `/api/admin/workterms/{id}/reject`                -  Reject a work term\
 GET:    `/api/report-template`                            -  Download report template
 
 ## Notes
