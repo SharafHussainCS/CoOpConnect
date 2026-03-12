@@ -1,7 +1,7 @@
 # CoOpConnect
 
 A full-stack co-op program management web application built with **FastAPI** (Python), **SQLite**, and **vanilla HTML/CSS/JS**.
-
+---
 ## Project Structure
 ```
 coop_app/
@@ -22,7 +22,7 @@ coop_app/
         ├── supervisor.html    # Supervisor dashboard
         └── admin.html         # Admin / Coordinator dashboard
 ```
-
+---
 ## Setup & Running
 
 ### 1. Install dependencies
