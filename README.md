@@ -42,7 +42,7 @@ python -m uvicorn main:app --reload --port 8000
 
 ## Default Admin Account
 
-Username: `admin`
+Username: `admin`\
 Password: `admin123`
 
 ## Features
@@ -88,9 +88,9 @@ Password: `admin123`
 
 
 ## Database Tables
-`applicants` -  Co-op applications with provisional/final status
-`users` -  Accounts for students, supervisors, and admins
-`work_terms` -  Work placements with reports and evaluations
+`applicants` -  Co-op applications with provisional/final status\
+`users` -  Accounts for students, supervisors, and admins\
+`work_terms` -  Work placements with reports and evaluations\
 `supervisor_assignments` -  Links supervisor emails to students
 
 
