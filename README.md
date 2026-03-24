@@ -9,6 +9,7 @@ CoOpConnect/
 ├── coop.db                    # Auto-created SQLite database
 ├── uploads/                   # Uploaded files (auto-created)
 │   ├── reports/
+│   ├── resumes/  
 │   └── evaluations/
 └── static/
     ├── index.html             # Home page
