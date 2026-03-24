@@ -114,6 +114,7 @@ POST:   `/api/supervisor/workterms/{id}/evaluate`         -  Submit evaluation\
 GET:    `/api/admin/applicants`                           -  List all applicants\
 PATCH:  `/api/admin/applicants/{id}/provisional`          -  Set provisional status\
 PATCH:  `/api/admin/applicants/{id}/final`                -  Set final status\
+GET:    `/api/admin/resume/{app_id}`                      -  Shows applicants resume\
 GET:    `/api/admin/students`                             -  List students + work terms\
 GET:    `/api/admin/notifications`                        -  Get overdue/missing items\
 PATCH:  `/api/admin/workterms/{id}/reject`                -  Reject a work term\
