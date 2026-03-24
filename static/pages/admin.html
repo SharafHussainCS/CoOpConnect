@@ -71,6 +71,7 @@
                 <th>Program</th>
                 <th>Year</th>
                 <th>Applied</th>
+                <th>Resume</th>
                 <th>Provisional</th>
                 <th>Final</th>
               </tr>
@@ -218,7 +219,7 @@ function updateStats() {
 function renderApplicants() {
   const tbody = document.getElementById('applicants-body');
   if (!applicantsData.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:2rem;">No applicants found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:2rem;">No applicants found.</td></tr>';
     return;
   }
   tbody.innerHTML = applicantsData.map(a => {
@@ -232,11 +233,22 @@ function renderApplicants() {
         <td>${a.program || '—'}</td>
         <td>${a.year || '—'}</td>
         <td style="font-size:0.78rem;">${formatDate(a.applied_at)}</td>
+        <td>
+          ${a.resume_path
+            ? `<a href="/api/admin/resume/${a.id}?token=${token}"
+                  target="_blank" rel="noopener"
+                  onclick="event.stopPropagation()"
+                  style="color:#004c9b;font-size:0.8rem;text-decoration:none;font-weight:500;">
+                  Resume
+              </a>`
+            : `<span style="color:#9aa5b4;font-size:0.78rem;">None</span>`
+          }
+        </td>
         <td>${provBadge}</td>
         <td>${finalBadge}</td>
       </tr>
       <tr class="expand-row" id="exp-${a.id}">
-        <td colspan="8">
+        <td colspan="9">
           <div class="expand-inner">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
               <div>

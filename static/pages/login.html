@@ -76,7 +76,11 @@
       </div>
       <div class="form-group">
         <label>Password</label>
-        <input type="password" id="su-password" placeholder="Choose a strong password">
+        <input type="password" id="su-password1" placeholder="Enter a strong password">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="su-password2" placeholder="Match your password">
       </div>
     </div>
 
@@ -99,7 +103,11 @@
       </div>
       <div class="form-group">
         <label>Password</label>
-        <input type="password" id="sv-password" placeholder="Choose a strong password">
+        <input type="password" id="sv-password1" placeholder="Enter a strong password">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="sv-password2" placeholder="Match your password">
       </div>
     </div>
 
@@ -168,7 +176,11 @@ async function doSignup() {
     const sid = document.getElementById('su-student-id').value.trim();
     const email = document.getElementById('su-email').value.trim();
     const username = document.getElementById('su-username').value.trim();
-    const password = document.getElementById('su-password').value;
+    const password = document.getElementById('su-password1').value;
+    if (document.getElementById('su-password1').value != document.getElementById('su-password2').value) {
+      showMsg("Passwords do not match!");
+      return;
+    }
     if (!sid || !email || !username || !password) { showMsg('Please fill in all fields.'); return; }
     form.append('student_id', sid); form.append('email', email);
     form.append('username', username); form.append('password', password);
@@ -177,7 +189,11 @@ async function doSignup() {
     const email = document.getElementById('sv-email').value.trim();
     const name = document.getElementById('sv-name').value.trim();
     const username = document.getElementById('sv-username').value.trim();
-    const password = document.getElementById('sv-password').value;
+    const password = document.getElementById('sv-password1').value;
+    if (document.getElementById('sv-password1').value != document.getElementById('sv-password2').value) {
+      showMsg("Passwords do not match!");
+      return;
+    }
     if (!email || !name || !username || !password) { showMsg('Please fill in all fields.'); return; }
     form.append('email', email); form.append('name', name);
     form.append('username', username); form.append('password', password);

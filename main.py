@@ -30,6 +30,7 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 (UPLOAD_DIR / "reports").mkdir(exist_ok=True)
 (UPLOAD_DIR / "evaluations").mkdir(exist_ok=True)
+(UPLOAD_DIR / "resumes").mkdir(exist_ok=True)
 
 # Database Setup -----------------------------------------------------------------------------------------------------------
 
@@ -186,7 +187,7 @@ async def apply(
         if ext.lower() not in ['.pdf', '.doc', '.docx']:
             raise HTTPException(400, "Resume must be PDF, DOC, or DOCX.")
         fname = f"{student_id}_resume{ext}"
-        fpath = UPLOAD_DIR / "reports" / fname
+        fpath = UPLOAD_DIR / "resumes" / fname
         with open(fpath, "wb") as f:
             shutil.copyfileobj(resume.file, f)
         resume_path = str(fpath)
@@ -471,6 +472,47 @@ def update_final(
     conn.close()
     return {"message": f"Final status updated to {status}."}
 
+@app.get("/api/admin/resume/{app_id}")
+def view_resume(app_id: int, token: str = None):
+    # Manually verify the token and check admin role
+    if not token:
+        raise HTTPException(401, "Not authenticated")
+    try:
+        payload = verify_token(token)
+    except:
+        raise HTTPException(401, "Invalid or expired token")
+    if payload["role"] != "admin":
+        raise HTTPException(403, "Insufficient permissions")
+
+    conn = get_db()
+    row = conn.execute(
+        "SELECT resume_path, name FROM applicants WHERE id=?", (app_id,)
+    ).fetchone()
+    conn.close()
+
+    if not row or not row["resume_path"]:
+        raise HTTPException(404, "No resume found for this applicant.")
+
+    path = Path(row["resume_path"])
+    if not path.exists():
+        raise HTTPException(404, "Resume file not found on server.")
+
+    suffix = path.suffix.lower()
+    if suffix == ".pdf":
+        media_type = "application/pdf"
+    elif suffix == ".doc":
+        media_type = "application/msword"
+    elif suffix == ".docx":
+        media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    else:
+        media_type = "application/octet-stream"
+
+    return FileResponse(
+        path=str(path),
+        media_type=media_type,
+        headers={"Content-Disposition": "inline"}
+    )
+    
 @app.get("/api/admin/students")
 def admin_get_students(user=Depends(require_role("admin"))):
     conn = get_db()
