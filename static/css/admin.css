@@ -75,6 +75,13 @@ font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #002D71;
 font-size: 0.75rem; color: var(--gray); margin-top: 0.25rem; letter-spacing: 0.05em; text-transform: uppercase; 
 }
 
+.notif-card-link {
+cursor: pointer; transition: border-color 0.2s, background 0.2s;
+}
+.notif-card-link:hover {
+border-color: rgba(224,92,92,0.5); background: #fff5f5;
+}
+
 /* Notification card */
 .notif-card {
 background: #ffffff; border: 1.5px solid rgba(224,92,92,0.25); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; 
@@ -106,6 +113,20 @@ padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem;
 .sub-tab.active {
 border-color: #004c9b; color: #002D71; background: rgba(0,76,155,0.08); 
 }
+
+/* Student table */
+.students-table tbody tr.student-row:hover td { background: #f0f4fd; }
+.students-table tbody tr.student-row td:first-child { border-radius: 0; }
+
+.student-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #002D71, #1a6fc4);
+  color: #ffffff; font-size: 0.72rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; letter-spacing: 0.05em;
+}
+
+.student-count-badge { display: flex; align-items: center; }
 
 /* Student cards (reused from supervisor.css) */
 .student-card {

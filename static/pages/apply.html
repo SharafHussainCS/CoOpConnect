@@ -36,7 +36,7 @@
         </div>
         <div class="step">
           <div class="step-num" id="s3">3</div>
-          <div class="step-text"><strong>Documents</strong>Upload your resume (optional)</div>
+          <div class="step-text"><strong>Documents</strong>Upload your resume</div>
         </div>
         <div class="step">
           <div class="step-num" id="s4">4</div>
@@ -44,8 +44,23 @@
         </div>
       </div>
     </div>
-    <div style="font-size:0.78rem;color:rgba(107,122,141,0.5);">
-      Already in co-op? <a href="/login" style="color:rgba(255,255,255,0.9);text-decoration:underline;">Sign In</a><br><br><a href="#" onclick="showStatusCheck()" style="color:rgba(255,255,255,0.7);font-size:0.78rem;text-decoration:underline;">Check application status</a>
+    <div class="sidebar-actions">
+      <a href="/login" class="sidebar-action-btn sidebar-action-login">
+        <span class="sab-icon">🔑</span>
+        <div class="sab-text">
+          <span class="sab-label">Already in co-op?</span>
+          <span class="sab-title">Sign In to Portal</span>
+        </div>
+        <span class="sab-arrow">→</span>
+      </a>
+      <button onclick="showStatusCheck()" class="sidebar-action-btn sidebar-action-status">
+        <span class="sab-icon">🔍</span>
+        <div class="sab-text">
+          <span class="sab-label">Applied before?</span>
+          <span class="sab-title">Check Application Status</span>
+        </div>
+        <span class="sab-arrow">→</span>
+      </button>
     </div>
   </div>
 
@@ -111,11 +126,23 @@
     <!-- Step 3: Documents -->
     <div class="step-section" id="sec3">
       <h1 style="font-family:'Playfair Display',serif;color:#002D71;">Documents</h1>
-      <p class="subtitle">Upload your resume to strengthen your application (optional).</p>
+      <p class="subtitle">Upload your resume - required to complete your application.</p>
       <div class="form-group">
-        <label>Resume (PDF, DOC, DOCX — optional)</label>
-        <input type="file" id="resume" accept=".pdf,.doc,.docx" style="padding:0.6rem;cursor:pointer;">
-        <div class="file-hint">Max file size: 5MB</div>
+        <label>Resume (PDF, DOC, DOCX) *</label>
+        <input type="file" id="resume" accept=".pdf,.doc,.docx" style="display:none;" onchange="updateFileLabel(this)">
+        <div class="file-drop-zone" id="file-drop-zone" onclick="document.getElementById('resume').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+          <div class="file-drop-icon">📄</div>
+          <div class="file-drop-text">
+            <span class="file-drop-title">Click to upload or drag &amp; drop</span>
+            <span class="file-drop-sub">PDF, DOC, or DOCX &nbsp;·&nbsp; Max 5MB</span>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm file-browse-btn">Browse Files</button>
+        </div>
+        <div class="file-selected hidden" id="file-selected">
+          <span class="file-selected-icon">✓</span>
+          <span id="file-selected-name"></span>
+          <button type="button" class="file-clear-btn" onclick="clearFile(event)">✕</button>
+        </div>
       </div>
       <div class="mt-4 flex gap-2">
         <button class="btn btn-primary" onclick="goStep(4)">Continue →</button>
@@ -129,7 +156,7 @@
       <p class="subtitle">Please read and confirm the following before submitting.</p>
 
       <div class="legal-box">
-        <h4>Co-operative Education Program — Application Agreement</h4>
+        <h4>Co-operative Education Program - Application Agreement</h4>
         <p>By submitting this application, I, the applicant, acknowledge and agree to the following terms and conditions governing participation in the TMU Co-operative Education Program:</p>
         <br>
         <p><strong>1. Accuracy of Information.</strong> I certify that all information provided in this application is accurate, complete, and true to the best of my knowledge. I understand that any misrepresentation may result in immediate rejection of my application or termination from the co-op program.</p>
@@ -173,7 +200,7 @@
         <h2>Application Submitted!</h2>
         <p>Thank you for applying to the TMU Co-op Program. Your application has been received and is under review by the Co-op Coordinator.</p>
         <br>
-        <p style="color:#5a6778;font-size:0.9rem;">You will be notified by email regarding your provisional acceptance status. This typically takes 5–10 business days.</p>
+        <p style="color:#5a6778;font-size:0.9rem;">You will be notified by email regarding your provisional acceptance status. This typically takes 5-10 business days.</p>
         <br>
         <a href="/" class="btn btn-primary" style="margin-top:1rem;">← Return to Home</a>
       </div>
@@ -264,6 +291,9 @@ function validateStep(step) {
     if (!document.getElementById('program').value) { showMsg('Please select your program.'); return false; }
     if (!document.getElementById('year').value) { showMsg('Please select your academic year.'); return false; }
   }
+  if (step === 3) {
+    if (!document.getElementById('resume').files[0]) { showMsg('Please upload your resume to continue.'); return false; }
+  }
   if (step === 4) {
     if (!document.getElementById('chk1').checked || !document.getElementById('chk2').checked || !document.getElementById('chk3').checked) {
       showMsg('Please confirm all checkboxes to proceed.'); return false;
@@ -284,7 +314,7 @@ async function submitApplication() {
   form.append('program', document.getElementById('program').value);
   form.append('year', document.getElementById('year').value);
   const resume = document.getElementById('resume').files[0];
-  if (resume) form.append('resume', resume);
+  form.append('resume', resume);
 
   try {
     const res = await fetch('/api/apply', { method: 'POST', body: form });
@@ -299,6 +329,33 @@ async function submitApplication() {
     showMsg('Network error. Please check your connection.');
     btn.disabled = false; btn.textContent = 'Submit Application';
   }
+}
+
+function updateFileLabel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('file-drop-zone').classList.add('hidden');
+  const sel = document.getElementById('file-selected');
+  sel.classList.remove('hidden');
+  document.getElementById('file-selected-name').textContent = file.name;
+}
+
+function clearFile(e) {
+  e.stopPropagation();
+  document.getElementById('resume').value = '';
+  document.getElementById('file-selected').classList.add('hidden');
+  document.getElementById('file-drop-zone').classList.remove('hidden');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('file-drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('resume').files = dt.files;
+  updateFileLabel(document.getElementById('resume'));
 }
 
 function showStatusCheck() {

@@ -35,3 +35,43 @@ align-items: center; justify-content: space-between; margin-bottom: 1.5rem;
 }
 .template-banner p { font-size: 0.875rem; color: #5a6778; }
 .template-banner strong { color: #002D71; }
+
+/* Custom file upload zone (report) */
+.file-drop-zone {
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  border: 1.5px dashed #b8ccf0;
+  border-radius: 12px;
+  background: #f7f9fc;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.file-drop-zone:hover { border-color: #004c9b; background: #eef3fc; }
+.file-drop-zone.drag-over { border-color: #002D71; background: #e8f0fb; }
+.file-drop-icon { font-size: 1.6rem; flex-shrink: 0; }
+.file-drop-text { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+.file-drop-title { font-size: 0.875rem; color: #1a2535; font-weight: 500; }
+.file-drop-sub { font-size: 0.76rem; color: #9aa5b4; }
+.file-browse-btn { flex-shrink: 0; pointer-events: none; }
+
+.file-selected {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid rgba(76,175,125,0.35);
+  border-radius: 10px;
+  background: rgba(76,175,125,0.06);
+  margin-top: 0.5rem;
+}
+.file-selected-icon { color: #4caf7d; font-weight: 700; font-size: 0.9rem; }
+.file-selected span:nth-child(2) {
+  flex: 1; font-size: 0.85rem; color: #1a2535;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.file-clear-btn {
+  background: none; border: none; cursor: pointer;
+  color: #9aa5b4; font-size: 0.85rem; padding: 0.15rem 0.4rem;
+  border-radius: 4px; transition: color 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.file-clear-btn:hover { color: #e05c5c; }

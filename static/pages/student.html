@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/shared.css">
 <link rel="stylesheet" href="/static/css/student.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
@@ -16,10 +17,10 @@
 
   <!-- Top bar -->
   <div class="topbar">
-    <a class="logo-link" href="/">
+    <div class="logo-link" style="cursor:default;">
       <div class="logo-badge">TMU</div>
       <span class="logo-name">Co-op Portal</span>
-    </a>
+    </div>
     <div class="topbar-right">
       <span class="user-chip" id="user-chip">🎓 Student</span>
       <button onclick="logout()">Sign Out</button>
@@ -48,14 +49,6 @@
             <p class="section-sub">Select a work term to submit your report.</p>
           </div>
           <button class="btn btn-primary btn-sm" onclick="showTab('add')">+ Add Work Term</button>
-        </div>
-
-        <div class="template-banner">
-          <div>
-            <strong>Need a report template?</strong>
-            <p>Download our official Co-op Report Template to get started.</p>
-          </div>
-          <a href="/api/report-template" class="btn btn-ghost btn-sm" download>⬇ Download Template</a>
         </div>
 
         <div id="wt-list"><div class="empty-state"><span class="icon">📁</span>No work terms yet. Add your first one!</div></div>
@@ -135,7 +128,20 @@
           <div id="rt-upload" class="tab-content active">
             <div class="form-group">
               <label>Report PDF</label>
-              <input type="file" id="report-file" accept=".pdf" style="padding:0.6rem;">
+              <input type="file" id="report-file" accept=".pdf" style="display:none;" onchange="updateReportLabel(this)">
+              <div id="report-drop-zone" onclick="document.getElementById('report-file').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleReportDrop(event)" style="display:flex;align-items:center;gap:1.25rem;padding:1.1rem 1.25rem;border:1.5px dashed #b8ccf0;border-radius:12px;background:#f7f9fc;cursor:pointer;transition:all 0.2s;user-select:none;">
+                <span style="font-size:1.6rem;flex-shrink:0;">📄</span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:0.2rem;">
+                  <span style="font-size:0.875rem;color:#1a2535;font-weight:500;">Click to upload or drag &amp; drop</span>
+                  <span style="font-size:0.76rem;color:#9aa5b4;">PDF only &nbsp;·&nbsp; Max 5MB</span>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm" style="flex-shrink:0;pointer-events:none;">Browse Files</button>
+              </div>
+              <div class="hidden" id="report-file-selected" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;border:1.5px solid rgba(76,175,125,0.35);border-radius:10px;background:rgba(76,175,125,0.06);margin-top:0.5rem;">
+                <span style="color:#4caf7d;font-weight:700;font-size:0.9rem;">✓</span>
+                <span id="report-file-name" style="flex:1;font-size:0.85rem;color:#1a2535;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+                <button type="button" onclick="clearReportFile(event)" style="background:none;border:none;cursor:pointer;color:#9aa5b4;font-size:0.85rem;padding:0.15rem 0.4rem;border-radius:4px;font-family:'DM Sans',sans-serif;">✕</button>
+              </div>
             </div>
             <button class="btn btn-primary btn-sm" onclick="submitReport()">Submit Report</button>
           </div>
@@ -215,7 +221,7 @@ function deadlineColor(endDate) {
 }
 
 function formatDate(d) {
-  if (!d) return '—';
+  if (!d) return '-';
   return new Date(d).toLocaleDateString('en-CA', {year:'numeric',month:'short',day:'numeric'});
 }
 
@@ -246,7 +252,7 @@ function renderList() {
         ${rejInd}
       </div>
       <div class="position">${wt.position}</div>
-      <div class="dates">${formatDate(wt.start_date)} – ${formatDate(wt.end_date)}</div>
+      <div class="dates">${formatDate(wt.start_date)} - ${formatDate(wt.end_date)}</div>
       <div class="indicators">${reportInd}${evalInd}</div>
     </div>`;
   }).join('');
@@ -255,12 +261,12 @@ function renderList() {
 function openDetail(id) {
   const wt = workTerms.find(w => w.id === id);
   currentWtId = id;
-  document.getElementById('detail-title').textContent = `${wt.company} — ${wt.position}`;
+  document.getElementById('detail-title').textContent = `${wt.company} - ${wt.position}`;
   document.getElementById('detail-sub').textContent = `${formatDate(wt.start_date)} to ${formatDate(wt.end_date)}`;
   document.getElementById('d-company').textContent = wt.company;
   document.getElementById('d-position').textContent = wt.position;
-  document.getElementById('d-dates').textContent = `${formatDate(wt.start_date)} – ${formatDate(wt.end_date)}`;
-  document.getElementById('d-supervisor').textContent = wt.supervisor_email || '—';
+  document.getElementById('d-dates').textContent = `${formatDate(wt.start_date)} - ${formatDate(wt.end_date)}`;
+  document.getElementById('d-supervisor').textContent = wt.supervisor_email || '-';
   const dl = deadline30(wt.end_date);
   const dlEl = document.getElementById('d-deadline');
   dlEl.textContent = formatDate(dl);
@@ -299,7 +305,37 @@ async function addWorkTerm() {
   if (res.ok) {
     showMsg('Work term added!', 'success');
     ['wt-company','wt-position','wt-start','wt-end','wt-supervisor'].forEach(id => document.getElementById(id).value='');
-    await loadWorkTerms();
+    await function updateReportLabel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('report-drop-zone').style.display = 'none';
+  const sel = document.getElementById('report-file-selected');
+  sel.classList.remove('hidden');
+  sel.style.display = 'flex';
+  document.getElementById('report-file-name').textContent = file.name;
+}
+
+function clearReportFile(e) {
+  e.stopPropagation();
+  document.getElementById('report-file').value = '';
+  const sel = document.getElementById('report-file-selected');
+  sel.classList.add('hidden');
+  sel.style.display = 'none';
+  document.getElementById('report-drop-zone').style.display = 'flex';
+}
+
+function handleReportDrop(e) {
+  e.preventDefault();
+  document.getElementById('report-drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('report-file').files = dt.files;
+  updateReportLabel(document.getElementById('report-file'));
+}
+
+loadWorkTerms();
     showTab('workterms');
   } else {
     showMsg(data.detail || 'Failed to add work term.');
@@ -325,11 +361,71 @@ async function generateAndSubmit() {
   const conclusion = document.getElementById('t-conclusion').value;
   if (!summary || !company || !work || !learning || !conclusion) { showMsg('Please fill in all template fields.'); return; }
 
-  // Generate simple text blob as PDF substitute
-  const content = `CO-OP WORK TERM REPORT\n${'='.repeat(40)}\n\nStudent: ${localStorage.getItem('name')}\nCompany: ${wt.company}\nPosition: ${wt.position}\nTerm: ${formatDate(wt.start_date)} – ${formatDate(wt.end_date)}\n\n1. EXECUTIVE SUMMARY\n${summary}\n\n2. COMPANY OVERVIEW\n${company}\n\n3. WORK ACCOMPLISHED\n${work}\n\n4. LEARNING OUTCOMES\n${learning}\n\n5. CONCLUSIONS\n${conclusion}\n`;
+  // Generate a real PDF using jsPDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  const margin = 60;
+  const pageW = doc.internal.pageSize.getWidth();
+  const maxW = pageW - margin * 2;
+  let y = margin;
 
-  const blob = new Blob([content], {type:'application/pdf'});
-  const file = new File([blob], 'coop_report.pdf', {type:'application/pdf'});
+  const addText = (text, size, bold, color) => {
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor(...(color || [26, 37, 53]));
+    const lines = doc.splitTextToSize(text, maxW);
+    lines.forEach(line => {
+      if (y > doc.internal.pageSize.getHeight() - margin) { doc.addPage(); y = margin; }
+      doc.text(line, margin, y);
+      y += size * 1.45;
+    });
+  };
+
+  const addSection = (title, body) => {
+    y += 10;
+    addText(title, 11, true, [0, 45, 113]);
+    y += 2;
+    doc.setDrawColor(180, 196, 220);
+    doc.line(margin, y, pageW - margin, y);
+    y += 12;
+    addText(body, 10, false);
+    y += 8;
+  };
+
+  // Header block
+  doc.setFillColor(0, 45, 113);
+  doc.rect(0, 0, pageW, 90, 'F');
+  doc.setFontSize(22); doc.setFont('helvetica', 'bold'); doc.setTextColor(255,255,255);
+  doc.text('Co-op Work Term Report', margin, 42);
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(180, 200, 235);
+  doc.text('Toronto Metropolitan University - Co-operative Education Program', margin, 62);
+  y = 115;
+
+  // Meta info
+  const studentName = localStorage.getItem('name') || 'Student';
+  addText(`Student: ${studentName}`, 10, false, [80, 96, 112]);
+  y -= 4;
+  addText(`Company: ${wt.company}   |   Position: ${wt.position}`, 10, false, [80, 96, 112]);
+  y -= 4;
+  addText(`Term: ${formatDate(wt.start_date)} - ${formatDate(wt.end_date)}`, 10, false, [80, 96, 112]);
+  y += 14;
+
+  addSection('1. Executive Summary', summary);
+  addSection('2. Company Overview', company);
+  addSection('3. Work Accomplished', work);
+  addSection('4. Learning Outcomes', learning);
+  addSection('5. Conclusions', conclusion);
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(160,170,180);
+    doc.text(`TMU Co-op Office  ·  Page ${i} of ${pageCount}`, margin, doc.internal.pageSize.getHeight() - 30);
+  }
+
+  const pdfBlob = doc.output('blob');
+  const file = new File([pdfBlob], 'coop_report.pdf', { type: 'application/pdf' });
   const form = new FormData(); form.append('report', file);
   const res = await fetch(`/api/student/workterms/${currentWtId}/report`, { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
   const data = await res.json();
