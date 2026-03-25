@@ -204,6 +204,22 @@ async def apply(
         conn.close()
     return {"message": "Application submitted successfully."}
 
+
+@app.post("/api/application-status")
+def check_application_status(
+    student_id: str = Form(...),
+    email: str = Form(...)
+):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT name, provisional_status, provisional_notes, final_status, final_notes, applied_at FROM applicants WHERE LOWER(student_id)=LOWER(?) AND LOWER(email)=LOWER(?)",
+        (student_id, email)
+    ).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "No application found for this Student ID and email combination.")
+    return dict(row)
+
 # Auth Endpoints ----------------------------------------------------------------------------
 
 @app.post("/api/login")
@@ -573,6 +589,93 @@ def reject_workterm(
     conn.commit()
     conn.close()
     return {"message": "Work term marked as rejected."}
+
+
+@app.delete("/api/admin/students/{student_id}")
+def delete_student(student_id: str, user=Depends(require_role("admin"))):
+    conn = get_db()
+    # Get user info first
+    student = conn.execute("SELECT * FROM users WHERE student_id=? AND role='student'", (student_id,)).fetchone()
+    if not student:
+        conn.close()
+        raise HTTPException(404, "Student not found.")
+    # Delete work terms and related data
+    conn.execute("DELETE FROM supervisor_assignments WHERE student_id=?", (student_id,))
+    conn.execute("DELETE FROM work_terms WHERE student_id=?", (student_id,))
+    # Delete applicant record
+    conn.execute("DELETE FROM applicants WHERE student_id=?", (student_id,))
+    # Delete user account
+    conn.execute("DELETE FROM users WHERE student_id=? AND role='student'", (student_id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Student and all associated data deleted."}
+
+
+@app.get("/api/admin/report/{wt_id}")
+def view_report(wt_id: int, token: str = None):
+    if not token:
+        raise HTTPException(401, "Not authenticated")
+    try:
+        payload = verify_token(token)
+    except:
+        raise HTTPException(401, "Invalid or expired token")
+    if payload["role"] != "admin":
+        raise HTTPException(403, "Insufficient permissions")
+    conn = get_db()
+    row = conn.execute("SELECT report_path FROM work_terms WHERE id=?", (wt_id,)).fetchone()
+    conn.close()
+    if not row or not row["report_path"]:
+        raise HTTPException(404, "No report found for this work term.")
+    path = Path(row["report_path"])
+    if not path.exists():
+        raise HTTPException(404, "Report file not found on server.")
+    return FileResponse(path=str(path), media_type="application/pdf", headers={"Content-Disposition": "inline"})
+
+@app.get("/api/admin/evaluation/{wt_id}")
+def view_evaluation(wt_id: int, token: str = None):
+    if not token:
+        raise HTTPException(401, "Not authenticated")
+    try:
+        payload = verify_token(token)
+    except:
+        raise HTTPException(401, "Invalid or expired token")
+    if payload["role"] != "admin":
+        raise HTTPException(403, "Insufficient permissions")
+    conn = get_db()
+    row = conn.execute("SELECT eval_path, eval_online_data FROM work_terms WHERE id=?", (wt_id,)).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(404, "Work term not found.")
+    if row["eval_path"]:
+        path = Path(row["eval_path"])
+        if not path.exists():
+            raise HTTPException(404, "Evaluation file not found on server.")
+        return FileResponse(path=str(path), media_type="application/pdf", headers={"Content-Disposition": "inline"})
+    elif row["eval_online_data"]:
+        import json
+        data = json.loads(row["eval_online_data"])
+        html = f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>Evaluation</title>
+        <style>body{{font-family:sans-serif;max-width:600px;margin:2rem auto;color:#1a2535}}
+        h2{{color:#002D71}}table{{width:100%;border-collapse:collapse;margin-top:1rem}}
+        td,th{{padding:0.6rem 1rem;border:1px solid #dde3ee;text-align:left}}
+        th{{background:#f7f9fc;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em}}</style>
+        </head><body>
+        <h2>Online Evaluation</h2>
+        <table>
+        <tr><th>Category</th><th>Rating</th></tr>
+        <tr><td>Technical Skills</td><td>{data.get('technical_skills','—')}</td></tr>
+        <tr><td>Communication</td><td>{data.get('communication','—')}</td></tr>
+        <tr><td>Teamwork</td><td>{data.get('teamwork','—')}</td></tr>
+        <tr><td>Attitude</td><td>{data.get('attitude','—')}</td></tr>
+        <tr><td>Overall Rating</td><td>{data.get('overall_rating','—')}</td></tr>
+        </table>
+        <h3 style="margin-top:1.5rem;color:#002D71">Comments</h3>
+        <p style="color:#5a6778">{data.get('comments','No comments provided.')}</p>
+        </body></html>"""
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html)
+    raise HTTPException(404, "No evaluation submitted for this work term.")
 
 # Template Download ----------------------------------------------------------------------------
 

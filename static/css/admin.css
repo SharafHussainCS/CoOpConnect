@@ -106,3 +106,13 @@ padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem;
 .sub-tab.active {
 border-color: #004c9b; color: #002D71; background: rgba(0,76,155,0.08); 
 }
+
+/* Student cards (reused from supervisor.css) */
+.student-card {
+  background: #ffffff; border: 1.5px solid #dde3ee;
+  border-radius: 14px; padding: 1.25rem; margin-bottom: 0.85rem;
+  cursor: pointer; transition: all 0.2s;
+}
+.student-card:hover { border-color: #004c9b; background: #f7f9fc; }
+.student-card .sname { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: #002D71; margin-bottom: 0.25rem; }
+.student-card .sdetail { color: var(--gray); font-size: 0.82rem; }

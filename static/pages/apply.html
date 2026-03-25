@@ -45,7 +45,7 @@
       </div>
     </div>
     <div style="font-size:0.78rem;color:rgba(107,122,141,0.5);">
-      Already in co-op? <a href="/login" style="color:rgba(255,255,255,0.9);text-decoration:underline;">Sign In</a>
+      Already in co-op? <a href="/login" style="color:rgba(255,255,255,0.9);text-decoration:underline;">Sign In</a><br><br><a href="#" onclick="showStatusCheck()" style="color:rgba(255,255,255,0.7);font-size:0.78rem;text-decoration:underline;">Check application status</a>
     </div>
   </div>
 
@@ -178,6 +178,46 @@
         <a href="/" class="btn btn-primary" style="margin-top:1rem;">← Return to Home</a>
       </div>
     </div>
+
+    <!-- Status Check -->
+    <div class="step-section" id="sec-status">
+      <h1 style="font-family:'Playfair Display',serif;color:#002D71;">Check Application Status</h1>
+      <p class="subtitle">Enter your Student ID and TMU email to see your application status.</p>
+      <div id="status-msg-area"></div>
+      <div class="form-group">
+        <label>Student ID *</label>
+        <input type="text" id="status-sid" placeholder="100123456" maxlength="9">
+      </div>
+      <div class="form-group">
+        <label>TMU Email *</label>
+        <input type="email" id="status-email" placeholder="jane.smith@torontomu.ca">
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button class="btn btn-primary" onclick="checkStatus()">Check Status</button>
+        <button class="btn btn-ghost" onclick="goStep(1)">← Back to Apply</button>
+      </div>
+      <div id="status-result" class="hidden" style="margin-top:2rem;">
+        <div class="panel">
+          <div class="panel-title">Application Result</div>
+          <div style="margin-bottom:1.25rem;">
+            <div style="font-size:0.75rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.3rem;">Applicant</div>
+            <div id="status-name" style="font-family:'Playfair Display',serif;font-size:1.2rem;color:#002D71;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+            <div style="background:#f7f9fc;border:1.5px solid #dde3ee;border-radius:10px;padding:1rem;">
+              <div style="font-size:0.7rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Provisional Acceptance</div>
+              <div id="status-provisional"></div>
+              <div id="status-prov-notes" style="font-size:0.78rem;color:#5a6778;margin-top:0.4rem;"></div>
+            </div>
+            <div style="background:#f7f9fc;border:1.5px solid #dde3ee;border-radius:10px;padding:1rem;">
+              <div style="font-size:0.7rem;color:#5a6778;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Final Acceptance</div>
+              <div id="status-final"></div>
+              <div id="status-final-notes" style="font-size:0.78rem;color:#5a6778;margin-top:0.4rem;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -258,6 +298,52 @@ async function submitApplication() {
   } catch(e) {
     showMsg('Network error. Please check your connection.');
     btn.disabled = false; btn.textContent = 'Submit Application';
+  }
+}
+
+function showStatusCheck() {
+  document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-status').classList.add('active');
+}
+
+function statusBadge(status) {
+  if (status === 'accepted') return '<span class="badge badge-accepted">✓ Accepted</span>';
+  if (status === 'rejected') return '<span class="badge badge-rejected">✗ Rejected</span>';
+  return '<span class="badge badge-pending">⏳ Pending Review</span>';
+}
+
+async function checkStatus() {
+  const sid   = document.getElementById('status-sid').value.trim();
+  const email = document.getElementById('status-email').value.trim();
+  const msgEl = document.getElementById('status-msg-area');
+
+  if (!sid || !email) {
+    msgEl.innerHTML = '<div class="alert alert-error">Please enter both your Student ID and email.</div>';
+    return;
+  }
+
+  msgEl.innerHTML = '';
+  document.getElementById('status-result').classList.add('hidden');
+
+  const form = new FormData();
+  form.append('student_id', sid);
+  form.append('email', email);
+
+  try {
+    const res  = await fetch('/api/application-status', { method: 'POST', body: form });
+    const data = await res.json();
+    if (!res.ok) {
+      msgEl.innerHTML = `<div class="alert alert-error">${data.detail || 'No application found.'}</div>`;
+      return;
+    }
+    document.getElementById('status-name').textContent        = data.name;
+    document.getElementById('status-provisional').innerHTML   = statusBadge(data.provisional_status);
+    document.getElementById('status-final').innerHTML         = statusBadge(data.final_status);
+    document.getElementById('status-prov-notes').textContent  = data.provisional_notes || '';
+    document.getElementById('status-final-notes').textContent = data.final_notes || '';
+    document.getElementById('status-result').classList.remove('hidden');
+  } catch(e) {
+    msgEl.innerHTML = '<div class="alert alert-error">Network error. Please try again.</div>';
   }
 }
 </script>

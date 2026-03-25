@@ -31,6 +31,7 @@
         <div class="sidebar-section">Management</div>
         <a href="#" id="nav-applicants" class="active" onclick="showPage('applicants');return false;">📋 Applicants</a>
         <a href="#" id="nav-students" onclick="showPage('students');return false;">🎓 Co-op Students</a>
+        <a href="#" id="nav-notifs" onclick="showPage('notifs');return false;">⚠ Notifications</a>
       </nav>
     </div>
 
@@ -83,21 +84,28 @@
 
       <!-- ── CO-OP STUDENTS PAGE ── -->
       <div id="page-students" class="hidden">
-        <h1 class="section-title">Co-op Students</h1>
-        <p class="section-sub">Monitor enrolled students, reports, and evaluations.</p>
 
-        <div class="sub-tabs">
-          <button class="sub-tab active" id="stab-all" onclick="showStudentTab('all')">All Students</button>
-          <button class="sub-tab" id="stab-notifs" onclick="showStudentTab('notifs')">⚠ Notifications</button>
+        <!-- Student list view -->
+        <div id="view-student-list">
+          <h1 class="section-title">Co-op Students</h1>
+          <p class="section-sub">Click a student to view their work terms.</p>
+          <div id="student-cards-list"><div class="empty-state"><span class="icon">🎓</span>No students enrolled yet.</div></div>
         </div>
 
-        <!-- All students sub-page -->
-        <div id="ssub-all">
+        <!-- Student detail view (work terms) -->
+        <div id="view-student-detail" class="hidden">
+          <div class="flex items-center gap-2 mb-4">
+            <button class="btn btn-ghost btn-sm" onclick="backToStudentList()">← Back</button>
+            <div>
+              <h1 class="section-title" id="detail-student-name"></h1>
+              <p class="section-sub" id="detail-student-info"></p>
+            </div>
+            <button class="btn btn-danger btn-sm" style="margin-left:auto;" id="detail-remove-btn" onclick="">Remove Student</button>
+          </div>
           <div class="panel" style="padding:0;overflow:hidden;">
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Student</th>
                   <th>Company</th>
                   <th>Position</th>
                   <th>Term</th>
@@ -107,24 +115,46 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="students-body"></tbody>
+              <tbody id="student-workterms-body"></tbody>
             </table>
           </div>
         </div>
-
-        <!-- Notifications sub-page -->
-        <div id="ssub-notifs" class="hidden">
-          <h3 style="font-family:'Playfair Display',serif;color:#002D71;margin-bottom:0.5rem;">Overdue Reports</h3>
-          <p style="font-size:0.82rem;color:var(--gray);margin-bottom:1rem;">Students who have not submitted their report after the 30-day deadline.</p>
-          <div id="notif-reports"><div class="empty-state"><span class="icon">✓</span>No overdue reports.</div></div>
-
-          <hr class="divider">
-
-          <h3 style="font-family:'Playfair Display',serif;color:#002D71;margin-bottom:0.5rem;">Missing Evaluations</h3>
-          <p style="font-size:0.82rem;color:var(--gray);margin-bottom:1rem;">Work terms where the supervisor has not submitted an evaluation.</p>
-          <div id="notif-evals"><div class="empty-state"><span class="icon">✓</span>No missing evaluations.</div></div>
-        </div>
       </div>
+
+      <!-- ── NOTIFICATIONS PAGE ── -->
+      <div id="page-notifs" class="hidden">
+        <h1 class="section-title">Notifications</h1>
+        <p class="section-sub">Students requiring attention.</p>
+
+        <h3 style="font-family:'Playfair Display',serif;color:#002D71;margin-bottom:0.5rem;">Overdue Reports</h3>
+        <p style="font-size:0.82rem;color:var(--gray);margin-bottom:1rem;">Students who have not submitted their report after the 30-day deadline.</p>
+        <div id="notif-reports"><div class="empty-state"><span class="icon">✓</span>No overdue reports.</div></div>
+
+        <hr class="divider">
+
+        <h3 style="font-family:'Playfair Display',serif;color:#002D71;margin-bottom:0.5rem;">Missing Evaluations</h3>
+        <p style="font-size:0.82rem;color:var(--gray);margin-bottom:1rem;">Work terms where the supervisor has not submitted an evaluation.</p>
+        <div id="notif-evals"><div class="empty-state"><span class="icon">✓</span>No missing evaluations.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Remove Student Modal -->
+<div class="modal-overlay hidden" id="remove-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Remove Student</span>
+      <button class="modal-close" onclick="closeRemoveModal()">✕</button>
+    </div>
+    <p style="font-size:0.9rem;color:#5a6778;margin-bottom:1.5rem;">
+      Are you sure you want to permanently remove <strong id="remove-student-name" style="color:#002D71;"></strong>?
+      This will delete their account, all work terms, and all associated data. This cannot be undone.
+    </p>
+    <div class="flex gap-2">
+      <button class="btn btn-danger" onclick="removeStudent()">Yes, Remove Student</button>
+      <button class="btn btn-ghost" onclick="closeRemoveModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -165,19 +195,12 @@ function showMsg(msg, type='error') {
 function logout() { localStorage.clear(); window.location.href = '/login'; }
 
 function showPage(page) {
-  document.getElementById('page-applicants').classList.toggle('hidden', page !== 'applicants');
-  document.getElementById('page-students').classList.toggle('hidden', page !== 'students');
-  document.getElementById('nav-applicants').classList.toggle('active', page === 'applicants');
-  document.getElementById('nav-students').classList.toggle('active', page === 'students');
+  ['applicants','students','notifs'].forEach(p => {
+    document.getElementById('page-' + p).classList.toggle('hidden', p !== page);
+    document.getElementById('nav-' + p).classList.toggle('active', p === page);
+  });
   if (page === 'students' && !studentsData.students) loadStudents();
-}
-
-function showStudentTab(tab) {
-  document.getElementById('ssub-all').classList.toggle('hidden', tab !== 'all');
-  document.getElementById('ssub-notifs').classList.toggle('hidden', tab !== 'notifs');
-  document.getElementById('stab-all').classList.toggle('active', tab === 'all');
-  document.getElementById('stab-notifs').classList.toggle('active', tab !== 'all');
-  if (tab === 'notifs' && !notifData.overdue_reports) loadNotifs();
+  if (page === 'notifs' && !notifData.overdue_reports) loadNotifs();
 }
 
 function formatDate(d) {
@@ -308,32 +331,84 @@ async function decideFinal(id, status) {
 async function loadStudents() {
   const res = await fetch('/api/admin/students', { headers: { Authorization: 'Bearer '+token }});
   studentsData = await res.json();
-  renderStudents();
+  renderStudentList();
 }
 
-function renderStudents() {
-  const tbody = document.getElementById('students-body');
-  const wts = studentsData.workterms || [];
-  if (!wts.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray);padding:2rem;">No work terms found.</td></tr>';
+function renderStudentList() {
+  const el = document.getElementById('student-cards-list');
+  const students = studentsData.students || [];
+  if (!students.length) {
+    el.innerHTML = '<div class="empty-state"><span class="icon">🎓</span>No students enrolled yet.</div>';
     return;
   }
-  tbody.innerHTML = wts.map(wt => {
-    const reportBadge = wt.report_path ? `<span class="badge badge-accepted">✓ Submitted</span>` : `<span class="badge badge-pending">Pending</span>`;
-    const evalBadge = wt.eval_submitted_at ? `<span class="badge badge-accepted">✓ Submitted</span>` : `<span class="badge badge-pending">Pending</span>`;
-    const statusBadge = wt.status === 'rejected' ? `<span class="badge badge-rejected">Rejected</span>` : `<span class="badge badge-info">Active</span>`;
-    const rejectBtn = wt.status !== 'rejected' ? `<button class="btn btn-danger btn-sm" onclick="openRejectModal(${wt.id})">Reject</button>` : '';
-    return `<tr>
-      <td><span class="name">${wt.student_name}</span><div style="font-size:0.75rem;color:var(--gray)">${wt.student_id||''}</div></td>
-      <td>${wt.company}</td>
-      <td>${wt.position}</td>
-      <td style="font-size:0.78rem;">${formatDate(wt.start_date)} –<br>${formatDate(wt.end_date)}</td>
-      <td>${reportBadge}</td>
-      <td>${evalBadge}</td>
-      <td>${statusBadge}</td>
-      <td>${rejectBtn}</td>
-    </tr>`;
+  el.innerHTML = students.map(s => {
+    // count work terms for this student
+    const wtCount = (studentsData.workterms || []).filter(w => w.student_id === s.student_id).length;
+    return `<div class="student-card" onclick="openStudentDetail('${s.student_id}')">
+      <div class="flex justify-between items-center">
+        <div class="sname">${s.name}</div>
+        <span class="badge badge-info">${wtCount} work term${wtCount !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="sdetail">${s.student_id} &nbsp;·&nbsp; ${s.email}</div>
+    </div>`;
   }).join('');
+}
+
+function openStudentDetail(studentId) {
+  const student  = (studentsData.students || []).find(s => s.student_id === studentId);
+  const workterms = (studentsData.workterms || []).filter(w => w.student_id === studentId);
+
+  document.getElementById('detail-student-name').textContent = student.name;
+  document.getElementById('detail-student-info').textContent = `${student.student_id}  ·  ${student.email}`;
+
+  // Wire up remove button
+  const removeBtn = document.getElementById('detail-remove-btn');
+  removeBtn.onclick = () => openRemoveModal(studentId, student.name);
+
+  const tbody = document.getElementById('student-workterms-body');
+  if (!workterms.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray);padding:2rem;">No work terms found for this student.</td></tr>';
+  } else {
+    tbody.innerHTML = workterms.map(wt => {
+      const reportCell = wt.report_path
+        ? `<a href="/api/admin/report/${wt.id}?token=${token}" target="_blank" rel="noopener"
+              style="color:#004c9b;font-size:0.8rem;text-decoration:none;font-weight:500;">⬡ View</a>`
+        : `<span class="badge badge-pending">Pending</span>`;
+      const evalCell = wt.eval_submitted_at
+        ? `<a href="/api/admin/evaluation/${wt.id}?token=${token}" target="_blank" rel="noopener"
+              style="color:#004c9b;font-size:0.8rem;text-decoration:none;font-weight:500;">⬡ View</a>`
+        : `<span class="badge badge-pending">Pending</span>`;
+      const statusBadge = wt.status === 'rejected'
+        ? `<span class="badge badge-rejected">Rejected</span>`
+        : `<span class="badge badge-info">Active</span>`;
+      const rejectBtn = wt.status !== 'rejected'
+        ? `<button class="btn btn-danger btn-sm" onclick="openRejectModal(${wt.id})">Reject</button>`
+        : '';
+      return `<tr>
+        <td>${wt.company}</td>
+        <td>${wt.position}</td>
+        <td style="font-size:0.78rem;">${formatDate(wt.start_date)} –<br>${formatDate(wt.end_date)}</td>
+        <td>${reportCell}</td>
+        <td>${evalCell}</td>
+        <td>${statusBadge}</td>
+        <td>${rejectBtn}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('view-student-list').classList.add('hidden');
+  document.getElementById('view-student-detail').classList.remove('hidden');
+}
+
+function backToStudentList() {
+  document.getElementById('view-student-detail').classList.add('hidden');
+  document.getElementById('view-student-list').classList.remove('hidden');
+}
+
+function openRemoveModal(studentId, studentName) {
+  removeStudentId = studentId;
+  document.getElementById('remove-student-name').textContent = studentName;
+  document.getElementById('remove-modal').classList.remove('hidden');
 }
 
 function openRejectModal(id) {
@@ -348,7 +423,7 @@ async function confirmReject() {
   const form = new FormData(); form.append('reason', reason);
   const res = await fetch(`/api/admin/workterms/${rejectWtId}/reject`, { method:'PATCH', headers:{Authorization:'Bearer '+token}, body:form });
   const data = await res.json();
-  if (res.ok) { showMsg('Work term rejected.', 'success'); closeRejectModal(); loadStudents(); }
+  if (res.ok) { showMsg('Work term rejected.', 'success'); closeRejectModal(); await loadStudents(); const det = document.getElementById('view-student-detail'); if (!det.classList.contains('hidden')) { const sid = document.getElementById('detail-student-info').textContent.split('·')[0].trim(); openStudentDetail(sid); } }
   else showMsg(data.detail || 'Failed.');
 }
 
@@ -384,6 +459,32 @@ function renderNotifs() {
         <div class="ninfo"><div class="nname">${e.student_name}</div><div class="ndetail">${e.company} — Supervisor: ${e.supervisor_email||'Unknown'}</div></div>
         <span class="ntag">⚠ No Eval</span>
       </div>`).join('');
+  }
+}
+
+
+let removeStudentId = null;
+
+function closeRemoveModal() {
+  document.getElementById('remove-modal').classList.add('hidden');
+  removeStudentId = null;
+}
+
+async function removeStudent() {
+  if (!removeStudentId) return;
+  const res  = await fetch(`/api/admin/students/${removeStudentId}`, {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showMsg('Student removed successfully.', 'success');
+    closeRemoveModal();
+    studentsData = {};
+    await loadStudents();
+    backToStudentList();
+  } else {
+    showMsg(data.detail || 'Failed to remove student.');
   }
 }
 
