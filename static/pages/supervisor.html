@@ -66,7 +66,20 @@
             </p>
             <div class="form-group">
               <label>Evaluation PDF</label>
-              <input type="file" id="eval-pdf" accept=".pdf" style="padding:0.6rem;cursor:pointer;">
+              <input type="file" id="eval-pdf" accept=".pdf" style="display:none;" onchange="updateEvalLabel(this)">
+              <div id="eval-drop-zone" onclick="document.getElementById('eval-pdf').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleEvalDrop(event)" style="display:flex;align-items:center;gap:1.25rem;padding:1.1rem 1.25rem;border:1.5px dashed #b8ccf0;border-radius:12px;background:#f7f9fc;cursor:pointer;transition:all 0.2s;user-select:none;">
+                <span style="font-size:1.6rem;flex-shrink:0;">📄</span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:0.2rem;">
+                  <span style="font-size:0.875rem;color:#1a2535;font-weight:500;">Click to upload or drag &amp; drop</span>
+                  <span style="font-size:0.76rem;color:#9aa5b4;">PDF only &nbsp;·&nbsp; Max 5MB</span>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm" style="flex-shrink:0;pointer-events:none;">Browse Files</button>
+              </div>
+              <div class="hidden" id="eval-file-selected" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 1rem;border:1.5px solid rgba(76,175,125,0.35);border-radius:10px;background:rgba(76,175,125,0.06);margin-top:0.5rem;">
+                <span style="color:#4caf7d;font-weight:700;font-size:0.9rem;">✓</span>
+                <span id="eval-file-name" style="flex:1;font-size:0.85rem;color:#1a2535;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+                <button type="button" onclick="clearEvalFile(event)" style="background:none;border:none;cursor:pointer;color:#9aa5b4;font-size:0.85rem;padding:0.15rem 0.4rem;border-radius:4px;font-family:'DM Sans',sans-serif;">✕</button>
+              </div>
             </div>
             <button class="btn btn-primary" onclick="submitEvalPDF()">Submit Evaluation</button>
           </div>
@@ -212,6 +225,36 @@ function openEval(id) {
   document.getElementById('tab-eval').classList.remove('hidden');
 }
 
+function updateEvalLabel(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('eval-drop-zone').style.display = 'none';
+  const sel = document.getElementById('eval-file-selected');
+  sel.classList.remove('hidden');
+  sel.style.display = 'flex';
+  document.getElementById('eval-file-name').textContent = file.name;
+}
+
+function clearEvalFile(e) {
+  e.stopPropagation();
+  document.getElementById('eval-pdf').value = '';
+  const sel = document.getElementById('eval-file-selected');
+  sel.classList.add('hidden');
+  sel.style.display = 'none';
+  document.getElementById('eval-drop-zone').style.display = 'flex';
+}
+
+function handleEvalDrop(e) {
+  e.preventDefault();
+  document.getElementById('eval-drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  document.getElementById('eval-pdf').files = dt.files;
+  updateEvalLabel(document.getElementById('eval-pdf'));
+}
+
 async function submitEvalPDF() {
   const file = document.getElementById('eval-pdf').files[0];
   if (!file) { showMsg('Please select a PDF file.'); return; }
@@ -220,7 +263,7 @@ async function submitEvalPDF() {
   form.append('eval_pdf', file);
   const res = await fetch(`/api/supervisor/workterms/${currentWtId}/evaluate`, { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
   const data = await res.json();
-  if (res.ok) { showMsg('Evaluation submitted!', 'success'); await loadStudents(); openEval(currentWtId); }
+  if (res.ok) { showMsg('Evaluation submitted!', 'success'); clearEvalFile({stopPropagation:()=>{}}); await loadStudents(); openEval(currentWtId); }
   else showMsg(data.detail || 'Submission failed.');
 }
 
