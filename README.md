@@ -93,7 +93,7 @@ Password: `admin123`
 - **Co-op Students page**:
   - Filter by: All, Missing Reports, Missing Evals, Fully Complete
   - Drill into a student to view all work terms with report/evaluation status
-  - 🔔 Notify button beside each pending Report or Evaluation — sends a pop-up reminder to the student or supervisor on their next login
+  - Notify button beside each pending Report or Evaluation — sends a pop-up reminder to the student or supervisor on their next login
   - Reject a work term with a reason; Remove a student and all associated data
 - **Notifications page**:
   - Lists students with overdue reports (past 30-day deadline)
