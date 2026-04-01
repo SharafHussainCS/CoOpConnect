@@ -33,6 +33,7 @@
       <nav>
         <div class="sidebar-section">Navigation</div>
         <a href="#" class="active" onclick="showTab('workterms'); return false;">📋 Work Terms</a>
+        <a href="#" onclick="showTab('todo'); return false;" id="nav-todo">✅ To Do <span id="todo-badge" style="display:none;background:#e05c5c;color:#fff;border-radius:10px;font-size:0.68rem;padding:0.1rem 0.45rem;margin-left:0.35rem;font-weight:700;"></span></a>
         <a href="#" onclick="showTab('add'); return false;">➕ Add Work Term</a>
       </nav>
     </div>
@@ -52,6 +53,13 @@
         </div>
 
         <div id="wt-list"><div class="empty-state"><span class="icon">📁</span>No work terms yet. Add your first one!</div></div>
+      </div>
+
+      <!-- To Do -->
+      <div id="tab-todo" class="hidden">
+        <h1 class="section-title">To Do</h1>
+        <p class="section-sub">Work terms that require your attention.</p>
+        <div id="todo-list"></div>
       </div>
 
       <!-- Add Work Term -->
@@ -169,6 +177,26 @@
   </div>
 </div>
 
+<!-- Notification Modal -->
+<div id="notif-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#fff;border-radius:20px;padding:2rem;max-width:460px;width:100%;box-shadow:0 24px 60px rgba(0,45,113,0.18);border:1px solid #dde3ee;">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+      <div style="width:42px;height:42px;border-radius:50%;background:rgba(232,164,76,0.15);border:1.5px solid rgba(232,164,76,0.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🔔</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:#002D71;font-weight:700;">Action Required</div>
+        <div style="font-size:0.78rem;color:#9aa5b4;">From your Co-op Coordinator</div>
+      </div>
+      <button onclick="dismissNotif()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#9aa5b4;font-size:1.2rem;line-height:1;">✕</button>
+    </div>
+    <div id="notif-modal-body" style="font-size:0.9rem;color:#2d3748;line-height:1.65;margin-bottom:1.5rem;"></div>
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+      <button onclick="dismissNotif()" style="padding:0.55rem 1.4rem;border-radius:9px;border:1.5px solid #dde3ee;background:#fff;color:#5a6778;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.875rem;">Dismiss</button>
+      <button onclick="goToTodo()" style="padding:0.55rem 1.4rem;border-radius:9px;border:none;background:#002D71;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:600;">Go to To Do →</button>
+    </div>
+    <div id="notif-more" style="text-align:center;margin-top:0.85rem;font-size:0.78rem;color:#9aa5b4;"></div>
+  </div>
+</div>
+
 <script>
 const API = '';
 let token = localStorage.getItem('token');
@@ -180,6 +208,44 @@ if (!token || localStorage.getItem('role') !== 'student') {
 }
 
 document.getElementById('user-chip').textContent = '🎓 ' + (localStorage.getItem('name') || 'Student');
+
+let pendingNotifs = [];
+let currentNotifIdx = 0;
+
+async function loadNotifications() {
+  try {
+    const res = await fetch('/api/notifications/my', { headers: { Authorization: 'Bearer '+token }});
+    if (!res.ok) return;
+    pendingNotifs = await res.json();
+    if (pendingNotifs.length > 0) showNotifModal(0);
+  } catch(e) {}
+}
+
+function showNotifModal(idx) {
+  currentNotifIdx = idx;
+  const n = pendingNotifs[idx];
+  document.getElementById('notif-modal-body').textContent = n.message;
+  const more = pendingNotifs.length - 1 - idx;
+  document.getElementById('notif-more').textContent = more > 0 ? `+${more} more notification${more > 1 ? 's' : ''} pending` : '';
+  document.getElementById('notif-modal').style.display = 'flex';
+}
+
+async function dismissNotif() {
+  const n = pendingNotifs[currentNotifIdx];
+  const form = new FormData(); form.append('notification_id', n.id);
+  await fetch('/api/notifications/dismiss', { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  pendingNotifs.splice(currentNotifIdx, 1);
+  if (pendingNotifs.length > 0) {
+    showNotifModal(Math.min(currentNotifIdx, pendingNotifs.length - 1));
+  } else {
+    document.getElementById('notif-modal').style.display = 'none';
+  }
+}
+
+function goToTodo() {
+  dismissNotif();
+  showTab('todo');
+}
 
 function showMsg(msg, type='error') {
   const el = document.getElementById('msg-area');
@@ -193,14 +259,16 @@ function logout() {
 }
 
 function showTab(tab) {
-  ['workterms','add','detail'].forEach(t => {
+  ['workterms','todo','add','detail'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('hidden', t !== tab);
   });
   document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
   if (tab === 'workterms' || tab === 'detail') {
     document.querySelectorAll('.sidebar nav a')[0].classList.add('active');
-  } else {
+  } else if (tab === 'todo') {
     document.querySelectorAll('.sidebar nav a')[1].classList.add('active');
+  } else {
+    document.querySelectorAll('.sidebar nav a')[2].classList.add('active');
   }
 }
 
@@ -234,6 +302,7 @@ async function loadWorkTerms() {
   const res = await fetch('/api/student/workterms', { headers: { Authorization: 'Bearer '+token }});
   workTerms = await res.json();
   renderList();
+  renderTodo();
 }
 
 function renderList() {
@@ -254,6 +323,57 @@ function renderList() {
       <div class="position">${wt.position}</div>
       <div class="dates">${formatDate(wt.start_date)} - ${formatDate(wt.end_date)}</div>
       <div class="indicators">${reportInd}${evalInd}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTodo() {
+  const el = document.getElementById('todo-list');
+  const badge = document.getElementById('todo-badge');
+  const navBadge = document.getElementById('nav-todo');
+
+  const pending = workTerms.filter(wt => {
+    if (wt.status === 'rejected') return false;
+    const needsReport = !wt.report_path;
+    return needsReport;
+  });
+
+  if (badge) {
+    if (pending.length > 0) {
+      badge.textContent = pending.length;
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  if (!pending.length) {
+    el.innerHTML = `<div class="empty-state"><span class="icon">✅</span>All caught up! Nothing needs your attention right now.</div>`;
+    return;
+  }
+
+  el.innerHTML = pending.map(wt => {
+    const dl = deadline30(wt.end_date);
+    const isOverdue = new Date() > dl;
+    const items = [];
+
+    if (!wt.report_path) {
+      const color = isOverdue ? 'var(--danger)' : 'var(--warning)';
+      const label = isOverdue ? '⚠ Report Overdue' : `📄 Report due ${formatDate(dl)}`;
+      items.push(`<div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-radius:10px;background:${isOverdue ? 'rgba(224,92,92,0.07)' : 'rgba(232,164,76,0.07)'};border:1px solid ${isOverdue ? 'rgba(224,92,92,0.25)' : 'rgba(232,164,76,0.25)'};margin-top:0.6rem;">
+        <span style="font-size:0.85rem;color:${color};font-weight:500;">${label}</span>
+        <button class="btn btn-ghost btn-sm" onclick="openDetail(${wt.id})" style="font-size:0.78rem;">Submit →</button>
+      </div>`);
+    }
+
+    return `<div class="panel" style="margin-bottom:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.25rem;">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:#002D71;">${wt.company}</div>
+          <div style="font-size:0.82rem;color:var(--gray);">${wt.position} &nbsp;·&nbsp; ${formatDate(wt.start_date)} – ${formatDate(wt.end_date)}</div>
+        </div>
+      </div>
+      ${items.join('')}
     </div>`;
   }).join('');
 }
@@ -444,6 +564,7 @@ async function updateSupervisor() {
 }
 
 loadWorkTerms();
+loadNotifications();
 </script>
 </body>
 </html>

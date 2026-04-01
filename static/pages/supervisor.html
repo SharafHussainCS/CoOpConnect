@@ -29,12 +29,20 @@
     <div class="sidebar">
       <nav>
         <div class="sidebar-section">Navigation</div>
-        <a href="#" class="active">👥 Co-op Employees</a>
+        <a href="#" class="active" id="nav-employees" onclick="showSuperTab('list'); return false;">👥 Co-op Employees</a>
+        <a href="#" id="nav-todo" onclick="showSuperTab('todo'); return false;">✅ To Do <span id="sv-todo-badge" style="display:none;background:#e05c5c;color:#fff;border-radius:10px;font-size:0.68rem;padding:0.1rem 0.45rem;margin-left:0.35rem;font-weight:700;"></span></a>
       </nav>
     </div>
 
     <div class="sidebar-content">
       <div id="msg-area"></div>
+
+      <!-- To Do -->
+      <div id="sv-tab-todo" class="hidden">
+        <h1 class="section-title">To Do</h1>
+        <p class="section-sub">Work terms awaiting your evaluation.</p>
+        <div id="sv-todo-list"></div>
+      </div>
 
       <!-- Student List -->
       <div id="tab-list">
@@ -160,6 +168,26 @@
   </div>
 </div>
 
+<!-- Notification Modal -->
+<div id="notif-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:#fff;border-radius:20px;padding:2rem;max-width:460px;width:100%;box-shadow:0 24px 60px rgba(0,45,113,0.18);border:1px solid #dde3ee;">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+      <div style="width:42px;height:42px;border-radius:50%;background:rgba(76,143,232,0.12);border:1.5px solid rgba(76,143,232,0.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">🔔</div>
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:#002D71;font-weight:700;">Action Required</div>
+        <div style="font-size:0.78rem;color:#9aa5b4;">From the Co-op Coordinator</div>
+      </div>
+      <button onclick="dismissNotif()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#9aa5b4;font-size:1.2rem;line-height:1;">✕</button>
+    </div>
+    <div id="notif-modal-body" style="font-size:0.9rem;color:#2d3748;line-height:1.65;margin-bottom:1.5rem;"></div>
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+      <button onclick="dismissNotif()" style="padding:0.55rem 1.4rem;border-radius:9px;border:1.5px solid #dde3ee;background:#fff;color:#5a6778;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.875rem;">Dismiss</button>
+      <button onclick="goToTodo()" style="padding:0.55rem 1.4rem;border-radius:9px;border:none;background:#002D71;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.875rem;font-weight:600;">Go to To Do →</button>
+    </div>
+    <div id="notif-more" style="text-align:center;margin-top:0.85rem;font-size:0.78rem;color:#9aa5b4;"></div>
+  </div>
+</div>
+
 <script>
 let token = localStorage.getItem('token');
 let currentWtId = null;
@@ -170,6 +198,44 @@ if (!token || localStorage.getItem('role') !== 'supervisor') {
 }
 
 document.getElementById('user-chip').textContent = '💼 ' + (localStorage.getItem('name') || 'Supervisor');
+
+let pendingNotifs = [];
+let currentNotifIdx = 0;
+
+async function loadNotifications() {
+  try {
+    const res = await fetch('/api/notifications/my', { headers: { Authorization: 'Bearer '+token }});
+    if (!res.ok) return;
+    pendingNotifs = await res.json();
+    if (pendingNotifs.length > 0) showNotifModal(0);
+  } catch(e) {}
+}
+
+function showNotifModal(idx) {
+  currentNotifIdx = idx;
+  const n = pendingNotifs[idx];
+  document.getElementById('notif-modal-body').textContent = n.message;
+  const more = pendingNotifs.length - 1 - idx;
+  document.getElementById('notif-more').textContent = more > 0 ? `+${more} more notification${more > 1 ? 's' : ''} pending` : '';
+  document.getElementById('notif-modal').style.display = 'flex';
+}
+
+async function dismissNotif() {
+  const n = pendingNotifs[currentNotifIdx];
+  const form = new FormData(); form.append('notification_id', n.id);
+  await fetch('/api/notifications/dismiss', { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  pendingNotifs.splice(currentNotifIdx, 1);
+  if (pendingNotifs.length > 0) {
+    showNotifModal(Math.min(currentNotifIdx, pendingNotifs.length - 1));
+  } else {
+    document.getElementById('notif-modal').style.display = 'none';
+  }
+}
+
+function goToTodo() {
+  dismissNotif();
+  showSuperTab('todo');
+}
 
 function showMsg(msg, type='error') {
   const el = document.getElementById('msg-area');
@@ -195,9 +261,58 @@ function switchEvalTab(tab) {
   document.getElementById('et-online').classList.toggle('active', tab==='online');
 }
 
+function showSuperTab(tab) {
+  document.getElementById('sv-tab-todo').classList.toggle('hidden', tab !== 'todo');
+  document.getElementById('tab-list').classList.toggle('hidden', tab === 'todo');
+  // hide eval panel when switching away
+  if (tab !== 'eval') {
+    document.getElementById('tab-eval').classList.add('hidden');
+  }
+  document.getElementById('nav-employees').classList.toggle('active', tab === 'list');
+  document.getElementById('nav-todo').classList.toggle('active', tab === 'todo');
+}
+
+function renderSvTodo() {
+  const el = document.getElementById('sv-todo-list');
+  const badge = document.getElementById('sv-todo-badge');
+
+  const pending = students.filter(s => !s.eval_submitted_at);
+
+  if (badge) {
+    if (pending.length > 0) {
+      badge.textContent = pending.length;
+      badge.style.display = 'inline';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  if (!pending.length) {
+    el.innerHTML = `<div class="empty-state"><span class="icon">✅</span>All caught up! All evaluations have been submitted.</div>`;
+    return;
+  }
+
+  el.innerHTML = pending.map(s => {
+    return `<div class="panel" style="margin-bottom:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.05rem;color:#002D71;">${s.student_name}</div>
+          <div style="font-size:0.82rem;color:var(--gray);">${s.company} &nbsp;·&nbsp; ${s.position}</div>
+          <div style="font-size:0.78rem;color:var(--gray);margin-top:0.15rem;">${formatDate(s.start_date)} – ${formatDate(s.end_date)}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openEval(${s.id}); showSuperTab('list');" style="font-size:0.78rem;">Evaluate →</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.75rem;padding:0.65rem 0.9rem;border-radius:10px;background:rgba(232,164,76,0.07);border:1px solid rgba(232,164,76,0.25);">
+        <span style="font-size:0.85rem;color:var(--warning);font-weight:500;">📋 Evaluation pending submission</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 async function loadStudents() {
   const res = await fetch('/api/supervisor/students', { headers: { Authorization: 'Bearer '+token }});
   students = await res.json();
+  renderSvTodo();
   const el = document.getElementById('student-list');
   if (!students.length) { el.innerHTML = '<div class="empty-state"><span class="icon">👥</span>No students assigned to you yet.</div>'; return; }
   el.innerHTML = students.map(s => {
@@ -287,6 +402,7 @@ async function submitEvalOnline() {
 }
 
 loadStudents();
+loadNotifications();
 </script>
 </body>
 </html>

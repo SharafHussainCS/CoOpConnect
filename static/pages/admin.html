@@ -421,6 +421,16 @@ function filterStudents(filter) {
   renderStudentList();
 }
 
+async function sendNotify(wtId, type) {
+  const form = new FormData();
+  form.append('work_term_id', wtId);
+  form.append('notify_type', type);
+  const res = await fetch('/api/admin/notify', { method:'POST', headers:{Authorization:'Bearer '+token}, body:form });
+  const data = await res.json();
+  if (res.ok) showMsg(`Notification sent to ${type === 'report' ? 'student' : 'supervisor'}.`, 'success');
+  else showMsg(data.detail || 'Failed to send notification.');
+}
+
 async function loadStudents() {
   const res = await fetch('/api/admin/students', { headers: { Authorization: 'Bearer '+token }});
   studentsData = await res.json();
@@ -530,11 +540,19 @@ function openStudentDetail(studentId) {
       const reportCell = wt.report_path
         ? `<a href="/api/admin/report/${wt.id}?token=${token}" target="_blank" rel="noopener"
               style="color:#004c9b;font-size:0.8rem;text-decoration:none;font-weight:500;">⬡ View</a>`
-        : `<span class="badge badge-pending">Pending</span>`;
+        : `<div style="display:flex;align-items:center;justify-content:center;gap:0.4rem;">
+            <span class="badge badge-pending">Pending</span>
+            <button class="btn btn-sm" onclick="sendNotify(${wt.id},'report')" title="Notify student"
+              style="padding:0.2rem 0.5rem;font-size:0.72rem;background:rgba(232,164,76,0.12);border:1px solid rgba(232,164,76,0.4);color:#c07000;border-radius:6px;cursor:pointer;">🔔</button>
+           </div>`;
       const evalCell = wt.eval_submitted_at
         ? `<a href="/api/admin/evaluation/${wt.id}?token=${token}" target="_blank" rel="noopener"
               style="color:#004c9b;font-size:0.8rem;text-decoration:none;font-weight:500;">⬡ View</a>`
-        : `<span class="badge badge-pending">Pending</span>`;
+        : `<div style="display:flex;align-items:center;justify-content:center;gap:0.4rem;">
+            <span class="badge badge-pending">Pending</span>
+            <button class="btn btn-sm" onclick="sendNotify(${wt.id},'evaluation')" title="Notify supervisor"
+              style="padding:0.2rem 0.5rem;font-size:0.72rem;background:rgba(76,143,232,0.12);border:1px solid rgba(76,143,232,0.4);color:#004c9b;border-radius:6px;cursor:pointer;">🔔</button>
+           </div>`;
       const statusBadge = wt.status === 'rejected'
         ? `<span class="badge badge-rejected">Rejected</span>`
         : `<span class="badge badge-info">Active</span>`;

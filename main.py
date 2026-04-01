@@ -100,6 +100,17 @@ def init_db():
         added_at TEXT DEFAULT (datetime('now'))
     )""")
 
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        recipient_username TEXT NOT NULL,
+        work_term_id INTEGER,
+        type TEXT NOT NULL,        -- 'report' or 'evaluation'
+        message TEXT NOT NULL,
+        dismissed INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now'))
+    )""")
+
     # Default admin account (password: admin123)
     admin_hash = hashlib.sha256("admin123".encode()).hexdigest()
     c.execute(
@@ -589,6 +600,79 @@ def reject_workterm(
     conn.commit()
     conn.close()
     return {"message": "Work term marked as rejected."}
+
+
+@app.post("/api/admin/notify")
+def send_notification(
+    work_term_id: int = Form(...),
+    notify_type: str = Form(...),   # 'report' or 'evaluation'
+    user=Depends(require_role("admin"))
+):
+    conn = get_db()
+    wt = conn.execute("""
+        SELECT wt.*, u.username as student_username, u.name as student_name
+        FROM work_terms wt
+        JOIN users u ON u.student_id = wt.student_id
+        WHERE wt.id=?
+    """, (work_term_id,)).fetchone()
+    if not wt:
+        conn.close()
+        raise HTTPException(404, "Work term not found.")
+
+    if notify_type == "report":
+        if wt["report_path"]:
+            conn.close()
+            raise HTTPException(400, "Report already submitted.")
+        recipient = wt["student_username"]
+        message = f"Reminder: Your work term report for {wt['company']} ({wt['position']}) is still pending. Please submit it as soon as possible."
+    elif notify_type == "evaluation":
+        if wt["eval_submitted_at"]:
+            conn.close()
+            raise HTTPException(400, "Evaluation already submitted.")
+        # Find supervisor username by email
+        sup = conn.execute("SELECT username FROM users WHERE email=? AND role='supervisor'", (wt["supervisor_email"],)).fetchone()
+        if not sup:
+            conn.close()
+            raise HTTPException(404, "Supervisor account not found. They may not have registered yet.")
+        recipient = sup["username"]
+        message = f"Reminder: The evaluation for {wt['student_name']} ({wt['company']} - {wt['position']}) is still pending. Please submit it as soon as possible."
+    else:
+        conn.close()
+        raise HTTPException(400, "notify_type must be 'report' or 'evaluation'.")
+
+    # Dismiss any existing unread notification of same type for same work term
+    conn.execute("""DELETE FROM notifications WHERE recipient_username=? AND work_term_id=? AND type=? AND dismissed=0""",
+                 (recipient, work_term_id, notify_type))
+    conn.execute("""INSERT INTO notifications (recipient_username, work_term_id, type, message)
+                    VALUES (?, ?, ?, ?)""", (recipient, work_term_id, notify_type, message))
+    conn.commit()
+    conn.close()
+    return {"message": "Notification sent."}
+
+
+@app.get("/api/notifications/my")
+def get_my_notifications(user=Depends(get_current_user)):
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT * FROM notifications
+        WHERE recipient_username=? AND dismissed=0
+        ORDER BY created_at DESC
+    """, (user["username"],)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+@app.post("/api/notifications/dismiss")
+def dismiss_notification(
+    notification_id: int = Form(...),
+    user=Depends(get_current_user)
+):
+    conn = get_db()
+    conn.execute("UPDATE notifications SET dismissed=1 WHERE id=? AND recipient_username=?",
+                 (notification_id, user["username"]))
+    conn.commit()
+    conn.close()
+    return {"message": "Dismissed."}
 
 
 @app.delete("/api/admin/students/{student_id}")
