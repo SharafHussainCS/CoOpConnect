@@ -54,12 +54,29 @@
           <span id="year-chips"></span>
         </div>
 
+        <!-- Status filter -->
+        <div class="year-bar" style="margin-top:-0.75rem;">
+          <span style="font-size:0.78rem;color:var(--gray);">Filter by status:</span>
+          <button class="year-chip active" id="status-all" onclick="filterStatus(null)">All</button>
+          <button class="year-chip" id="status-pending" onclick="filterStatus('pending')" style="border-color:#f0d080;color:#c07000;">⏳ Pending</button>
+          <button class="year-chip" id="status-prov" onclick="filterStatus('prov_only')" style="border-color:rgba(76,175,125,0.4);color:#2d8a5e;">✓ Prov. Accepted</button>
+          <button class="year-chip" id="status-rejected" onclick="filterStatus('rejected')" style="border-color:rgba(224,92,92,0.4);color:#c0392b;">✗ Rejected</button>
+        </div>
+
         <!-- Stats -->
         <div class="stats-row">
-          <div class="stat-card"><div class="stat-num" id="stat-total">-</div><div class="stat-label">Total Applied</div></div>
-          <div class="stat-card"><div class="stat-num" id="stat-prov-acc" style="color:var(--success)">-</div><div class="stat-label">Prov. Accepted</div></div>
-          <div class="stat-card"><div class="stat-num" id="stat-final-acc" style="color:#002D71">-</div><div class="stat-label">Finally Accepted</div></div>
-          <div class="stat-card"><div class="stat-num" id="stat-rejected" style="color:var(--danger)">-</div><div class="stat-label">Rejected</div></div>
+          <div class="stat-card" style="cursor:pointer;" onclick="filterStatus(null)" title="Show all">
+            <div class="stat-num" id="stat-total">-</div><div class="stat-label">Total Applied</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="filterStatus('prov_only')" title="Show provisionally accepted">
+            <div class="stat-num" id="stat-prov-acc" style="color:var(--success)">-</div><div class="stat-label">Prov. Accepted</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="filterStatus(null)" title="Show all">
+            <div class="stat-num" id="stat-final-acc" style="color:#002D71">-</div><div class="stat-label">Finally Accepted</div>
+          </div>
+          <div class="stat-card" style="cursor:pointer;" onclick="filterStatus('rejected')" title="Show rejected">
+            <div class="stat-num" id="stat-rejected" style="color:var(--danger)">-</div><div class="stat-label">Rejected</div>
+          </div>
         </div>
 
         <div class="panel" style="padding:0;overflow:hidden;">
@@ -94,6 +111,16 @@
             </div>
             <div class="student-count-badge" id="student-count-badge"></div>
           </div>
+
+          <!-- Student status filter -->
+          <div class="year-bar" style="margin-bottom:1.25rem;">
+            <span style="font-size:0.78rem;color:var(--gray);">Filter by:</span>
+            <button class="year-chip active" id="sf-all" onclick="filterStudents('all')">All</button>
+            <button class="year-chip" id="sf-missing-reports" onclick="filterStudents('missing-reports')" style="border-color:rgba(232,164,76,0.5);color:#c07000;">📄 Missing Reports</button>
+            <button class="year-chip" id="sf-missing-evals" onclick="filterStudents('missing-evals')" style="border-color:rgba(232,164,76,0.5);color:#c07000;">📋 Missing Evals</button>
+            <button class="year-chip" id="sf-complete" onclick="filterStudents('complete')" style="border-color:rgba(76,175,125,0.4);color:#2d8a5e;">✓ Fully Complete</button>
+          </div>
+
           <div class="panel" style="padding:0;overflow:hidden;">
             <div id="student-cards-list">
               <div class="empty-state"><span class="icon">🎓</span>No students enrolled yet.</div>
@@ -192,6 +219,8 @@ let studentsData = {};
 let notifData = {};
 let rejectWtId = null;
 let currentYear = null;
+let currentStatusFilter = null;
+let currentStudentFilter = 'all';
 
 if (!token || localStorage.getItem('role') !== 'admin') {
   window.location.href = '/login';
@@ -243,6 +272,20 @@ function filterYear(y) {
   loadApplicants(y);
 }
 
+function filterStatus(status) {
+  currentStatusFilter = status;
+  ['all','pending','prov','rejected'].forEach(k => {
+    document.getElementById('status-' + k).classList.toggle('active', 
+      (k === 'all' && !status) ||
+      (k === 'pending' && status === 'pending') ||
+      (k === 'prov' && status === 'prov_only') ||
+      (k === 'rejected' && status === 'rejected')
+    );
+  });
+  renderApplicants();
+  updateStats();
+}
+
 function updateStats() {
   document.getElementById('stat-total').textContent = applicantsData.length;
   document.getElementById('stat-prov-acc').textContent = applicantsData.filter(a => a.provisional_status === 'accepted').length;
@@ -252,11 +295,21 @@ function updateStats() {
 
 function renderApplicants() {
   const tbody = document.getElementById('applicants-body');
-  if (!applicantsData.length) {
+
+  let filtered = applicantsData;
+  if (currentStatusFilter === 'pending') {
+    filtered = applicantsData.filter(a => a.provisional_status === 'pending');
+  } else if (currentStatusFilter === 'prov_only') {
+    filtered = applicantsData.filter(a => a.provisional_status === 'accepted' && a.final_status === 'pending');
+  } else if (currentStatusFilter === 'rejected') {
+    filtered = applicantsData.filter(a => a.provisional_status === 'rejected' || a.final_status === 'rejected');
+  }
+
+  if (!filtered.length) {
     tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--gray);padding:2rem;">No applicants found.</td></tr>';
     return;
   }
-  tbody.innerHTML = applicantsData.map(a => {
+  tbody.innerHTML = filtered.map(a => {
     const provBadge = `<span class="badge badge-${a.provisional_status}">${a.provisional_status}</span>`;
     const finalBadge = `<span class="badge badge-${a.final_status}">${a.final_status}</span>`;
     return `
@@ -303,7 +356,10 @@ function renderApplicants() {
                   <input type="text" id="fnotes-${a.id}" value="${a.final_notes||''}" placeholder="Optional notes…">
                 </div>
                 <div class="flex gap-2">
-                  <button class="btn btn-success btn-sm" onclick="decideFinal(${a.id},'accepted');event.stopPropagation()">✓ Accept Final</button>
+                  ${a.provisional_status !== 'accepted'
+                    ? `<button class="btn btn-success btn-sm" disabled title="Provisional acceptance required first" style="opacity:0.4;cursor:not-allowed;">✓ Accept Final</button>`
+                    : `<button class="btn btn-success btn-sm" onclick="decideFinal(${a.id},'accepted');event.stopPropagation()">✓ Accept Final</button>`
+                  }
                   <button class="btn btn-danger btn-sm" onclick="decideFinal(${a.id},'rejected');event.stopPropagation()">✗ Reject Final</button>
                 </div>
               </div>
@@ -324,11 +380,29 @@ async function decideProvisional(id, status) {
   const form = new FormData(); form.append('status', status); form.append('notes', notes);
   const res = await fetch(`/api/admin/applicants/${id}/provisional`, { method:'PATCH', headers:{Authorization:'Bearer '+token}, body:form });
   const data = await res.json();
-  if (res.ok) { showMsg(`Provisional ${status}.`, 'success'); loadApplicants(currentYear); }
-  else showMsg(data.detail || 'Failed.');
+  if (res.ok) {
+    if (status === 'rejected') {
+      const applicant = applicantsData.find(a => a.id === id);
+      if (applicant && applicant.final_status !== 'rejected') {
+        const ff = new FormData();
+        ff.append('status', 'rejected');
+        ff.append('notes', 'Auto-rejected: provisional application was rejected.');
+        await fetch(`/api/admin/applicants/${id}/final`, { method:'PATCH', headers:{Authorization:'Bearer '+token}, body:ff });
+      }
+      showMsg('Provisional rejected — final decision also set to rejected.', 'success');
+    } else {
+      showMsg('Provisional accepted.', 'success');
+    }
+    loadApplicants(currentYear);
+  } else showMsg(data.detail || 'Failed.');
 }
 
 async function decideFinal(id, status) {
+  const applicant = applicantsData.find(a => a.id === id);
+  if (status === 'accepted' && applicant?.provisional_status !== 'accepted') {
+    showMsg('This applicant must be provisionally accepted before a final acceptance can be issued.');
+    return;
+  }
   const notes = document.getElementById('fnotes-'+id).value;
   const form = new FormData(); form.append('status', status); form.append('notes', notes);
   const res = await fetch(`/api/admin/applicants/${id}/final`, { method:'PATCH', headers:{Authorization:'Bearer '+token}, body:form });
@@ -339,6 +413,14 @@ async function decideFinal(id, status) {
 
 // ── Students ──────────────────────────────────────────────────────────────────
 
+function filterStudents(filter) {
+  currentStudentFilter = filter;
+  ['all','missing-reports','missing-evals','complete'].forEach(k => {
+    document.getElementById('sf-' + k).classList.toggle('active', k === filter);
+  });
+  renderStudentList();
+}
+
 async function loadStudents() {
   const res = await fetch('/api/admin/students', { headers: { Authorization: 'Bearer '+token }});
   studentsData = await res.json();
@@ -347,10 +429,29 @@ async function loadStudents() {
 
 function renderStudentList() {
   const el = document.getElementById('student-cards-list');
-  const students = studentsData.students || [];
+  let students = studentsData.students || [];
+  const workterms = studentsData.workterms || [];
+
+  if (currentStudentFilter === 'missing-reports') {
+    students = students.filter(s => {
+      const wts = workterms.filter(w => w.student_id === s.student_id);
+      return wts.length > 0 && wts.some(w => !w.report_path);
+    });
+  } else if (currentStudentFilter === 'missing-evals') {
+    students = students.filter(s => {
+      const wts = workterms.filter(w => w.student_id === s.student_id);
+      return wts.length > 0 && wts.some(w => !w.eval_submitted_at);
+    });
+  } else if (currentStudentFilter === 'complete') {
+    students = students.filter(s => {
+      const wts = workterms.filter(w => w.student_id === s.student_id);
+      return wts.length > 0 && wts.every(w => w.report_path && w.eval_submitted_at);
+    });
+  }
 
   const badge = document.getElementById('student-count-badge');
-  if (badge) badge.innerHTML = students.length ? `<span class="badge badge-info">${students.length} enrolled</span>` : '';
+  const totalCount = (studentsData.students || []).length;
+  if (badge) badge.innerHTML = totalCount ? `<span class="badge badge-info">${students.length}${currentStudentFilter !== 'all' ? ' filtered' : ' enrolled'}</span>` : '';
 
   if (!students.length) {
     el.innerHTML = '<div class="empty-state"><span class="icon">🎓</span>No students enrolled yet.</div>';
@@ -372,7 +473,7 @@ function renderStudentList() {
       </thead>
       <tbody>
         ${students.map(s => {
-          const allWt = (studentsData.workterms || []).filter(w => w.student_id === s.student_id);
+          const allWt = workterms.filter(w => w.student_id === s.student_id);
           const wtCount = allWt.length;
           const reportsDone = allWt.filter(w => w.report_path).length;
           const evalsDone   = allWt.filter(w => w.eval_submitted_at).length;
